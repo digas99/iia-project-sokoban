@@ -30,11 +30,25 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 # pprint.pprint(state)
                 
                 key = "d"
-                
+
+                # getting every single coordenate value of map and putting it
+                # into a list of lists 'map_pos'
+                map_pos = []
+                map_rows = str(mapa).split('\n')
+                for row in map_rows:
+                    row_pos = []
+                    n_col=0
+                    for pos in row:
+                        row_pos.append(pos)
+                        n_col+=1
+                    map_pos.append(row_pos)
+
+                print(map_pos[3][2])
+
                 if state['keeper'] == [4,3]:
                     key = "a"
 
-                print(Map(f"levels/{state['level']}.xsb"))
+                # print(Map(f"levels/{state['level']}.xsb"))
                 await websocket.send(
                     json.dumps({"cmd": "key", "key": key})
                 )  # send key command to server - you must implement this send in the AI agent

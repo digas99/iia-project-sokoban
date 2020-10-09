@@ -16,7 +16,7 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
 
         # You can create your own map representation or use the game representation:
         mapa = Map(game_properties["map"])
-        #print(mapa)
+        print(mapa)
 
         while True:
             try:
@@ -34,7 +34,7 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 if state['keeper'] == [4,3]:
                     key = "a"
 
-                #print(Map(f"levels/{state['level']}.xsb"))
+                print(Map(f"levels/{state['level']}.xsb"))
                 await websocket.send(
                     json.dumps({"cmd": "key", "key": key})
                 )  # send key command to server - you must implement this send in the AI agent

@@ -26,24 +26,21 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
 
                 print(state)
 
+                print(type(mapa))
+
+                boxes = state['boxes']
+                print(boxes)
+
+                map_pos = map_matrix(mapa)
+
+                print(map_pos)
+
+                print(is_dead_end([1,2], map_pos))
+
                 # import pprint
                 # pprint.pprint(state)
                 
                 key = "d"
-
-                # getting every single coordenate value of map and putting it
-                # into a list of lists 'map_pos'
-                map_pos = []
-                map_rows = str(mapa).split('\n')
-                for row in map_rows:
-                    row_pos = []
-                    n_col=0
-                    for pos in row:
-                        row_pos.append(pos)
-                        n_col+=1
-                    map_pos.append(row_pos)
-
-                print(map_pos[3][2])
 
                 if state['keeper'] == [4,3]:
                     key = "a"
@@ -56,6 +53,39 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 print("Server has cleanly disconnected us")
                 return
 
+def map_matrix(mapa):
+    map_pos = []
+    map_rows = str(mapa).split('\n')
+    length = len(map_rows[0])
+    for i in range(length):
+        map_row = []
+        for row in map_rows:
+            map_row.append(row[i])
+        map_pos.append(map_row)
+    return map_pos
+
+def is_dead_end(caixa, map_pos):
+    caixa_x = caixa[0]
+    caixa_y = caixa[1]
+    wall_counter = 0
+
+    if map_pos[caixa_x-1][caixa_y] == "#":
+        print(caixa_x-1, caixa_y)
+        wall_counter+=1
+
+    if map_pos[caixa_x][caixa_y-1] == "#":
+        print(caixa_x, caixa_y-1)
+        wall_counter+=1
+
+    if map_pos[caixa_x+1][caixa_y] == "#":
+        print(caixa_x+1, caixa_y)
+        wall_counter+=1
+
+    if map_pos[caixa_x][caixa_y+1] == "#":
+        print(caixa_x, caixa_y+1)
+        wall_counter+=1
+
+    return True if wall_counter > 1 else False
 
 # DO NOT CHANGE THE LINES BELLOW
 # You can change the default values using the command line, example:

@@ -2,6 +2,7 @@ import asyncio
 import getpass
 import json
 import os
+import math
 
 import websockets
 from mapa import Map
@@ -35,7 +36,7 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
 
                 print(map_pos)
 
-                print(is_dead_end([1,2], map_pos))
+                print(is_dead_end([1,5], map_pos))
 
                 # import pprint
                 # pprint.pprint(state)
@@ -69,23 +70,27 @@ def is_dead_end(caixa, map_pos):
     caixa_y = caixa[1]
     wall_counter = 0
 
-    if map_pos[caixa_x-1][caixa_y] == "#":
-        print(caixa_x-1, caixa_y)
-        wall_counter+=1
+    if map_pos[caixa_x-1][caixa_y] == "#" and map_pos[caixa_x][caixa_y+1] == "#":
+        print(map_pos[caixa_x-1][caixa_y],  map_pos[caixa_x][caixa_y+1])
+        return True
 
-    if map_pos[caixa_x][caixa_y-1] == "#":
-        print(caixa_x, caixa_y-1)
-        wall_counter+=1
+    if map_pos[caixa_x-1][caixa_y] == "#" and map_pos[caixa_x][caixa_y-1] == "#":
+        print(map_pos[caixa_x-1][caixa_y], map_pos[caixa_x][caixa_y-1])
+        return True
 
-    if map_pos[caixa_x+1][caixa_y] == "#":
-        print(caixa_x+1, caixa_y)
-        wall_counter+=1
+    if map_pos[caixa_x+1][caixa_y] == "#" and map_pos[caixa_x][caixa_y+1] == "#":
+        print(map_pos[caixa_x+1][caixa_y], map_pos[caixa_x][caixa_y+1])
+        return True
 
-    if map_pos[caixa_x][caixa_y+1] == "#":
-        print(caixa_x, caixa_y+1)
-        wall_counter+=1
+    if map_pos[caixa_x+1][caixa_y] == "#" and map_pos[caixa_x][caixa_y-1] == "#":
+        print(map_pos[caixa_x+1][caixa_y], map_pos[caixa_x][caixa_y-1])
+        return True
 
-    return True if wall_counter > 1 else False
+    return False 
+
+def distance(p1, p2):
+    return math.sqrt(((p1[0]-p2[0])**2)+((p1[1]-p2[1])**2))
+
 
 # DO NOT CHANGE THE LINES BELLOW
 # You can change the default values using the command line, example:

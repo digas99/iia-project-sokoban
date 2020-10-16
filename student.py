@@ -3,7 +3,6 @@ import getpass
 import json
 import os
 import math
-
 import websockets
 from mapa import Map
 
@@ -32,11 +31,11 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 boxes = state['boxes']
                 print(boxes)
 
-                map_pos = map_matrix(mapa)
+                map_pos = map_coord(mapa)
 
                 print(map_pos)
 
-                print(is_dead_end([1,5], map_pos))
+                print(is_deadlock([1,5], map_pos))
 
                 # import pprint
                 # pprint.pprint(state)
@@ -54,18 +53,21 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 print("Server has cleanly disconnected us")
                 return
 
-def map_matrix(mapa):
+def map_coord(mapa):
     map_pos = []
-    map_rows = str(mapa).split('\n')
-    length = len(map_rows[0])
-    for i in range(length):
-        map_row = []
-        for row in map_rows:
-            map_row.append(row[i])
-        map_pos.append(map_row)
-    return map_pos
+    map_pos = str(mapa).split('\n')
+    # map_rows = str(mapa).split('\n')
+    # length = len(map_rows[0])
+    # for i in range(length):
+    #     map_row = []
+    #     for row in map_rows:
+    #         map_row.append(row[i])
+    #     map_pos.append(map_row)
+    # return map_pos
+    return list(map(list, zip(*map_pos)))
 
-def is_dead_end(caixa, map_pos):
+# requer modificações
+def is_deadlock(caixa, map_pos):
     caixa_x = caixa[0]
     caixa_y = caixa[1]
     wall_counter = 0
@@ -88,8 +90,15 @@ def is_dead_end(caixa, map_pos):
 
     return False 
 
+#será necessária?
 def distance(p1, p2):
     return math.sqrt(((p1[0]-p2[0])**2)+((p1[1]-p2[1])**2))
+
+
+    
+
+
+
 
 
 # DO NOT CHANGE THE LINES BELLOW

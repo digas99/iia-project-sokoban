@@ -1,24 +1,36 @@
+import numpy as np
 
-class Node():
 
-    def _init_(self, parent=None, coords=None):
+class Node:
+
+    def __init__(self, current, parent):
+        self.current = current
         self.parent = parent
-        self.coords = coords
-
         self.g = 0
         self.h = 0
         self.f = 0
 
-    def __eq__(self, node):
-        return node.coords == node.coords
-    
-    def astar(map, box_coords, goal):
-        start_node = Node(Node, box_coords)
-        start_node.g = start_node.h = start_node.f = 0
-        goal_node = Node(Node, goal)
-        goal_node.g = goal.node.h = goal_node.f = 0
+def grid(matrix):
+    lines = len(matrix)
+    columns = len(matrix[0])
+    grid = matrix
+    for l in range(lines):
+        for c in range(columns):
+            grid[l][c] = Node(None,None)
 
-        #lists
+    return grid
+
+
+def search_boxes(grid, start, goal):
+    open_set = []
+    closed_set = []
+
+    startnode = Node(start, None) 
+    goalnode =  Node(goal, None)
+
+    open_set.append(startnode)
+
+
         
 
 

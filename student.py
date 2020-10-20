@@ -3,7 +3,9 @@ import getpass
 import json
 import os
 import math
-import websockets
+import websockets 
+import numpy as np
+from astar import *
 from mapa import Map
 
 async def agent_loop(server_address="localhost:8000", agent_name="student"):
@@ -31,11 +33,16 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 boxes = state['boxes']
                 print(boxes)
 
-                map_pos = map_coord(mapa)
+                map_pos = matrix(mapa)
+                print(np.array(map_pos))
+                
+                
+                print(grid(map_pos)[0][0])
+                
 
                 print(map_pos)
 
-                print(is_deadlock([1,5], map_pos))
+                #print(is_deadlock([1,5], map_pos))
 
                 # import pprint
                 # pprint.pprint(state)
@@ -45,6 +52,8 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 if state['keeper'] == [4,3]:
                     key = "a"
 
+
+
                 # print(Map(f"levels/{state['level']}.xsb"))
                 await websocket.send(
                     json.dumps({"cmd": "key", "key": key})
@@ -53,8 +62,7 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 print("Server has cleanly disconnected us")
                 return
 
-def map_coord(mapa):
-    map_pos = []
+def matrix(mapa):
     map_pos = str(mapa).split('\n')
     # map_rows = str(mapa).split('\n')
     # length = len(map_rows[0])
@@ -64,10 +72,12 @@ def map_coord(mapa):
     #         map_row.append(row[i])
     #     map_pos.append(map_row)
     # return map_pos
-    return list(map(list, zip(*map_pos)))
+    #return list(map(list, zip(*map_pos)))
+    return list(map(list, map_pos))
+
 
 # requer modificações
-def is_deadlock(caixa, map_pos):
+'''def is_deadlock(caixa, map_pos):
     caixa_x = caixa[0]
     caixa_y = caixa[1]
     wall_counter = 0
@@ -88,16 +98,11 @@ def is_deadlock(caixa, map_pos):
         print(map_pos[caixa_x+1][caixa_y], map_pos[caixa_x][caixa_y-1])
         return True
 
-    return False 
+    return False '''
 
 #será necessária?
 def distance(p1, p2):
     return math.sqrt(((p1[0]-p2[0])**2)+((p1[1]-p2[1])**2))
-
-
-    
-
-
 
 
 

@@ -4,7 +4,6 @@ import json
 import os
 import math
 import websockets 
-import numpy as np
 from astar import *
 from mapa import Map
 

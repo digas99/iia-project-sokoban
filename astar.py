@@ -1,11 +1,10 @@
-import numpy as np
-
 
 class Node:
 
-    def __init__(self, position, n_next):
+    def __init__(self, symbol, position):
         self.position = position
-        self.n_next = n_next 
+        self.symbol = symbol
+        self.n_next = None
         self.g = 0
         self.h = 0
 
@@ -61,11 +60,7 @@ def search_boxes(grid, start, goal):
                 continue
 
             if n in openset: 
-        
-
-
-
-def heuristic(start_node, goal_node):
+                pass
     
 
         

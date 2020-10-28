@@ -61,13 +61,8 @@ def search_boxes(grid, start, goal):
             if n in closedset:
                 continue
 
-            if n in openset:
-
-        
-
-
-
-def heuristic(start_node, goal_node):
+            if n in openset: 
+                pass
     
 
         

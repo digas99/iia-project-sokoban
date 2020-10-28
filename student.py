@@ -37,7 +37,7 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 print(np.array(map_pos))
                 
                 
-                print(grid(map_pos)[0][0])
+                print(grid(map_pos))
                 
 
                 print(map_pos)

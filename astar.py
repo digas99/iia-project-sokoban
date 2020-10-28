@@ -4,9 +4,11 @@ class Node:
     def __init__(self, symbol, position):
         self.position = position
         self.symbol = symbol
-        self.n_next = None
+        self.n_next = None 
         self.g = 0
         self.h = 0
+
+    def move_cost(self, other)
 
 # def grid(matrix):
 #     lines = len(matrix)
@@ -24,7 +26,7 @@ def children(node, grid):
     for n in grid:
         if n.position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
             childrenlist.append(n)
-    return childrenlist
+    return [n for n in childrenlist if n.symbol != '#']
 
 
 def search_boxes(grid, start, goal):
@@ -59,8 +61,13 @@ def search_boxes(grid, start, goal):
             if n in closedset:
                 continue
 
-            if n in openset: 
-                pass
+            if n in openset:
+
+        
+
+
+
+def heuristic(start_node, goal_node):
     
 
         

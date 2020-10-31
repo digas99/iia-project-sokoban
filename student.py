@@ -37,19 +37,21 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 #print(np.array(map_pos))
                 print(map_pos)
                 
-                #print(grid(mapa))
+                #ENCONTRA O CAMINHO MAIS RAPIDO DA CAIXA AO GOAL 
                 gridmap = grid(mapa)
                 lines = len(gridmap)
                 cols = len(gridmap[0])
                 start = 0
                 goal = 0
+                # CAIXA TESTE 
                 for l in range(lines):
                     for c in range(cols):
                         if gridmap[l][c].symbol == '$':
                             start = gridmap[l][c]
                         if gridmap[l][c].symbol == '.':
                             goal = gridmap[l][c]
-                path = search_boxes(gridmap, start, goal)
+                path = search_boxes(gridmap, start, goal) 
+                # PRINTA O PATH 
                 for node in path:
                     x, y = node.position
                     print(y, x) #transposed
@@ -73,7 +75,7 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 return
 
 def grid(mapa):
-    # create a grid of nodes
+    # creates a grid of nodes from map
     matrix = str(mapa).split('\n')
     lines = len(matrix)
     cols = len(matrix[0])

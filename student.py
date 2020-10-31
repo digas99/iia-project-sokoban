@@ -29,27 +29,38 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
 
                 print(type(mapa))
 
-                boxes = state['boxes']
-                print(boxes)
+                # boxes = state['boxes']
+                # print(boxes)
 
+                
                 map_pos = matrix(mapa)
-                print(np.array(map_pos))
-                
-                
-                print(grid(map_pos))
-                
-
+                #print(np.array(map_pos))
                 print(map_pos)
-
-                #print(is_deadlock([1,5], map_pos))
+                
+                #print(grid(mapa))
+                gridmap = grid(mapa)
+                lines = len(gridmap)
+                cols = len(gridmap[0])
+                start = 0
+                goal = 0
+                for l in range(lines):
+                    for c in range(cols):
+                        if gridmap[l][c].symbol == '$':
+                            start = gridmap[l][c]
+                        if gridmap[l][c].symbol == '.':
+                            goal = gridmap[l][c]
+                path = search_boxes(gridmap, start, goal)
+                for node in path:
+                    x, y = node.position
+                    print(y, x) #transposed
 
                 # import pprint
                 # pprint.pprint(state)
                 
-                key = "d"
+                #key = "d"
 
-                if state['keeper'] == [4,3]:
-                    key = "a"
+                # if state['keeper'] == [4,3]:
+                #     key = "a"
 
 
 
@@ -61,18 +72,21 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 print("Server has cleanly disconnected us")
                 return
 
+def grid(mapa):
+    # create a grid of nodes
+    matrix = str(mapa).split('\n')
+    lines = len(matrix)
+    cols = len(matrix[0])
+    grid = [[0 for c in range(cols)] for l in range(lines)]
+    for l in range(lines):
+        for c in range(cols):
+            grid[l][c] = Node(matrix[l][c], (l,c))
+    return list(map(list, zip(*grid)))
+
 def matrix(mapa):
     map_pos = str(mapa).split('\n')
-    # map_rows = str(mapa).split('\n')
-    # length = len(map_rows[0])
-    # for i in range(length):
-    #     map_row = []
-    #     for row in map_rows:
-    #         map_row.append(row[i])
-    #     map_pos.append(map_row)
-    # return map_pos
-    #return list(map(list, zip(*map_pos)))
-    return list(map(list, map_pos))
+    return list(map(list, zip(*map_pos)))
+
 
 
 # requer modificações

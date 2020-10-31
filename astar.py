@@ -18,9 +18,10 @@ def heuristics(node, goal):
 def children(node, grid):
     x,y = node.position
     childrenlist = []
-    for n in grid:
-        if n.position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
-            childrenlist.append(n)
+    for l in range(len(grid)):
+        for c in range(len(grid[0])):
+            if grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
+                childrenlist.append(grid[l][c])
     return [n for n in childrenlist if n.symbol != '#']
 
 # A* algorithm
@@ -40,7 +41,7 @@ def search_boxes(grid, start, goal):
         #if node is goal box
         if curr_node == goal:
             path = []
-            while curr_node.n_next:
+            while curr_node.previous:
                 path.append(curr_node)
                 curr_node = curr_node.previous
             path.append(curr_node)

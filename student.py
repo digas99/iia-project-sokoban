@@ -33,12 +33,12 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 # print(boxes)
 
                 
-                map_pos = matrix(mapa)
+                tmap = transpose(mapa)
                 #print(np.array(map_pos))
-                print(map_pos)
+                print(tmap)
                 
                 #ENCONTRA O CAMINHO MAIS RAPIDO DA CAIXA AO GOAL 
-                gridmap = grid(mapa)
+                gridmap = grid(tmap)
                 lines = len(gridmap)
                 cols = len(gridmap[0])
                 start = 0
@@ -54,7 +54,7 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 # PRINTA O PATH 
                 for node in path:
                     x, y = node.position
-                    print(y, x) #transposed
+                    print(x, y) #transposed
 
                 # import pprint
                 # pprint.pprint(state)
@@ -74,22 +74,20 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 print("Server has cleanly disconnected us")
                 return
 
-def grid(mapa):
-    # creates a grid of nodes from map
-    matrix = str(mapa).split('\n')
-    lines = len(matrix)
-    cols = len(matrix[0])
-    grid = [[0 for c in range(cols)] for l in range(lines)]
-    for l in range(lines):
-        for c in range(cols):
-            grid[l][c] = Node(matrix[l][c], (l,c))
-    return list(map(list, zip(*grid)))
 
-def matrix(mapa):
+def transpose(mapa):
     map_pos = str(mapa).split('\n')
     return list(map(list, zip(*map_pos)))
 
-
+def grid(mapa):
+    # creates a grid of nodes from map
+    lines = len(mapa)
+    cols = len(mapa[0])
+    grid = [[0 for c in range(cols)] for l in range(lines)]
+    for l in range(lines):
+        for c in range(cols):
+            grid[l][c] = Node(mapa[l][c], (l,c))
+    return grid
 
 # requer modificações
 '''def is_deadlock(caixa, map_pos):

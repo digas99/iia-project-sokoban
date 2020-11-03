@@ -54,7 +54,7 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 # PRINTA O PATH 
                 for node in path:
                     x, y = node.position
-                    print(x, y) #transposed
+                    print(x, y) 
 
                 # import pprint
                 # pprint.pprint(state)
@@ -112,12 +112,6 @@ def grid(mapa):
         return True
 
     return False '''
-
-#será necessária?
-def distance(p1, p2):
-    return math.sqrt(((p1[0]-p2[0])**2)+((p1[1]-p2[1])**2))
-
-
 
 # DO NOT CHANGE THE LINES BELLOW
 # You can change the default values using the command line, example:

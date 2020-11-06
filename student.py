@@ -27,29 +27,32 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
 
                 print(state)
 
-                print(type(mapa))
-
                 # boxes = state['boxes']
                 # print(boxes)
-
-                
+  
                 tmap = transpose(mapa)
-                #print(np.array(map_pos))
-                print(tmap)
-                
+
                 #ENCONTRA O CAMINHO MAIS RAPIDO DA CAIXA AO GOAL 
                 gridmap = grid(tmap)
-                lines = len(gridmap)
-                cols = len(gridmap[0])
-                start = 0
-                goal = 0
-                # CAIXA TESTE 
-                for l in range(lines):
-                    for c in range(cols):
-                        if gridmap[l][c].symbol == '$':
-                            start = gridmap[l][c]
-                        if gridmap[l][c].symbol == '.':
-                            goal = gridmap[l][c]
+
+                start, goal = 0, 0    
+                rows, cols = len(gridmap), len(gridmap[0])
+                deadlocks = []
+                for row in range(rows):
+                    for col in range(cols):
+                        current_node = gridmap[row][col]
+                        current_pos = current_node.position
+
+                        if current_node.symbol == '.':
+                            goal = current_node
+
+                        # check only for squares that are not walls or in the frame of the map
+                        elif current_node.symbol != '#' and not in_frame(rows, cols, current_pos) and deadlock_closeToWall(gridmap, current_pos):
+                            deadlocks.append(current_node)
+
+                            if current_node.symbol == '$':
+                                start = current_node
+
                 path = search_boxes(gridmap, start, goal) 
                 # PRINTA O PATH 
                 for node in path:
@@ -89,29 +92,17 @@ def grid(mapa):
             grid[l][c] = Node(mapa[l][c], (l,c))
     return grid
 
-# requer modificações
-'''def is_deadlock(caixa, map_pos):
-    caixa_x = caixa[0]
-    caixa_y = caixa[1]
-    wall_counter = 0
-
-    if map_pos[caixa_x-1][caixa_y] == "#" and map_pos[caixa_x][caixa_y+1] == "#":
-        print(map_pos[caixa_x-1][caixa_y],  map_pos[caixa_x][caixa_y+1])
-        return True
-
-    if map_pos[caixa_x-1][caixa_y] == "#" and map_pos[caixa_x][caixa_y-1] == "#":
-        print(map_pos[caixa_x-1][caixa_y], map_pos[caixa_x][caixa_y-1])
-        return True
-
-    if map_pos[caixa_x+1][caixa_y] == "#" and map_pos[caixa_x][caixa_y+1] == "#":
-        print(map_pos[caixa_x+1][caixa_y], map_pos[caixa_x][caixa_y+1])
-        return True
-
-    if map_pos[caixa_x+1][caixa_y] == "#" and map_pos[caixa_x][caixa_y-1] == "#":
-        print(map_pos[caixa_x+1][caixa_y], map_pos[caixa_x][caixa_y-1])
-        return True
-
-    return False '''
+def deadlock_closeToWall(mapa, pos):
+    print("pos", pos)
+    x, y = pos[0], pos[1]
+    around = [(x-1, y), (x, y-1), (x+1, y), (x, y+1)]
+    for square in around:
+        if mapa[square[0]][square[1]].symbol == '#':
+            return True
+    return False
+                
+def in_frame(rows, cols, pos):
+    return pos[0] == 0 or pos[0] == rows-1 or pos[1] == 0 or pos[1] == cols-1
 
 # DO NOT CHANGE THE LINES BELLOW
 # You can change the default values using the command line, example:

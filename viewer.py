@@ -133,15 +133,17 @@ def scale(pos):
 
 def draw_background(mapa):
     """Create background surface."""
-    background = pygame.Surface(scale(mapa.size))
-    for x in range(mapa.size[0]):
+    map_x, map_y = mapa.size
+    background = pygame.Surface(scale((map_x+2, map_y)))
+    for x in range(mapa.size[0]+2):
         for y in range(mapa.size[1]):
-            wx, wy = scale((x, y))
-            background.blit(SPRITES, (wx, wy), (*PASSAGE, *scale((1, 1))))
-            if mapa.get_tile((x, y)) == Tiles.WALL:
-                background.blit(SPRITES, (wx, wy), (*WALL, *scale((1, 1))))
-            if mapa.get_tile((x, y)) in [Tiles.GOAL, Tiles.BOX_ON_GOAL, Tiles.MAN_ON_GOAL]:
-                background.blit(SPRITES, (wx, wy), (*GOAL, *scale((1, 1))))
+            if x < mapa.size[0]:
+                wx, wy = scale((x, y))
+                background.blit(SPRITES, (wx, wy), (*PASSAGE, *scale((1, 1))))
+                if mapa.get_tile((x, y)) == Tiles.WALL:
+                    background.blit(SPRITES, (wx, wy), (*WALL, *scale((1, 1))))
+                if mapa.get_tile((x, y)) in [Tiles.GOAL, Tiles.BOX_ON_GOAL, Tiles.MAN_ON_GOAL]:
+                    background.blit(SPRITES, (wx, wy), (*GOAL, *scale((1, 1))))
 
     return background
 

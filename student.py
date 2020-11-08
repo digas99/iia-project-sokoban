@@ -47,8 +47,8 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                             goal = current_node
 
                         # check only for squares that are not walls or in the frame of the map
-                        elif current_node.symbol != '#' and not in_frame(rows, cols, current_pos) and deadlock_closeToWall(gridmap, current_pos):
-                            deadlocks.append(current_node)
+                        elif current_node.symbol != '#' and not in_frame(rows, cols, current_pos):
+                            obstacles_around(gridmap, current_pos)
 
                             if current_node.symbol == '$':
                                 start = current_node
@@ -92,15 +92,14 @@ def grid(mapa):
             grid[l][c] = Node(mapa[l][c], (l,c))
     return grid
 
-def deadlock_closeToWall(mapa, pos):
+def obstacles_around(mapa, pos):
     print("pos", pos)
     x, y = pos[0], pos[1]
-    around = [(x-1, y), (x, y-1), (x+1, y), (x, y+1)]
-    for square in around:
-        if mapa[square[0]][square[1]].symbol == '#':
-            return True
-    return False
-                
+    unwanted_symbols = ['#', '$', '*']
+    around = [(x-1, y), (x-1, y-1), (x, y-1), (x+1, y-1), (x+1, y), (x+1, y+1), (x, y+1), (x-1, y+1)]
+    obstacles = [square for square in around if mapa[square[0]][square[1]].symbol in unwanted_symbols]
+    print(obstacles)
+
 def in_frame(rows, cols, pos):
     return pos[0] == 0 or pos[0] == rows-1 or pos[1] == 0 or pos[1] == cols-1
 

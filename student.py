@@ -42,16 +42,10 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                     for col in range(cols):
                         current_node = gridmap[row][col]
                         current_pos = current_node.position
-
                         if current_node.symbol == '.':
                             goal = current_node
-
-                        # check only for squares that are not walls or in the frame of the map
-                        elif current_node.symbol != '#' and not in_frame(rows, cols, current_pos):
-                            obstacles_around(gridmap, current_pos)
-
-                            if current_node.symbol == '$':
-                                start = current_node
+                        if current_node.symbol == '$':
+                            start = current_node
 
                 path = search_boxes(gridmap, start, goal) 
                 # PRINTA O PATH 
@@ -59,6 +53,11 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                     x, y = node.position
                     print(x, y) 
 
+                print("\n\nTESTEEEEEEE")
+                pos = (2, 4)
+                direction = "horizontal"
+                print(f"Checking: {direction}\nPosition {pos} has blockage in both sides:",opp_sides_blockage(gridmap, pos, obstacles_around(gridmap, pos), direction))
+                
                 # import pprint
                 # pprint.pprint(state)
                 
@@ -93,15 +92,97 @@ def grid(mapa):
     return grid
 
 def obstacles_around(mapa, pos):
-    print("pos", pos)
-    x, y = pos[0], pos[1]
-    unwanted_symbols = ['#', '$', '*']
-    around = [(x-1, y), (x-1, y-1), (x, y-1), (x+1, y-1), (x+1, y), (x+1, y+1), (x, y+1), (x-1, y+1)]
-    obstacles = [square for square in around if mapa[square[0]][square[1]].symbol in unwanted_symbols]
-    print(obstacles)
+    rows_lim, cols_lim = len(mapa)-1, len(mapa[0])-1
+    if not in_frame(rows_lim, cols_lim, pos):
+        #print(f"obstacles around {pos}")
+        x, y = pos[0], pos[1]
+        unwanted_symbols = ['#', '$', '*']
+        around = [(x-1, y), (x-1, y-1), (x, y-1), (x+1, y-1), (x+1, y), (x+1, y+1), (x, y+1), (x-1, y+1)]
+        return [square for square in around if mapa[square[0]][square[1]].symbol in unwanted_symbols]
 
-def in_frame(rows, cols, pos):
-    return pos[0] == 0 or pos[0] == rows-1 or pos[1] == 0 or pos[1] == cols-1
+# main function that checks for obstacles in both sides of the given square
+def opp_sides_blockage(mapa, pos, obstacles, side_info):
+    rows_lim, cols_lim = len(mapa)-1, len(mapa[0])-1
+    # if has reached a place in the frame, then it is blocked
+    if in_frame(rows_lim, cols_lim, pos):
+        print(f"WARNING: {pos} is in frame!")
+        return True
+    
+    print(f"[opp_side] CHECKING POS{pos}:")
+    x, y = pos[0], pos[1]
+    pos1_obst, pos2_obst, sides = [], [], []
+    if side_info == "horizontal":
+        s1, s2 = "l", "r"
+        sides = [x-1, x+1]
+    else:
+        s1, s2 = "t", "b"
+        sides = [y-1, y+1]
+    # loops through both sides
+    for side in sides:
+        if side_info == "horizontal":
+            sides_pos = [(side, y), (side, y-1), (side, y+1)]
+        else:
+            sides_pos = [(x, side), (x-1, side), (x+1, side)]
+
+        # loops through each obstacle for each side
+        for obst in obstacles:
+            # if obstacle is in one of the sides
+            if obst in sides_pos:
+                # if is the first side
+                if side == x-1:
+                    pos1_obst.append(obst)
+                # if is the second side
+                else:
+                    pos2_obst.append(obst)
+
+    print("pos1", pos1_obst)
+    print("pos2", pos2_obst)
+    # if there is atleast one obstacle on both sides
+    if len(pos1_obst) > 0 and len(pos2_obst) > 0:
+        checks1 = [side_blockage(mapa, obst, obstacles_around(mapa, obst), s1) for obst in pos1_obst]
+        checks2 = [side_blockage(mapa, obst, obstacles_around(mapa, obst), s2) for obst in pos2_obst]
+        return atleast_one_true(checks1) and atleast_one_true(checks2)
+    else:
+        return False
+
+# recursive function that checks for obstacles in a specific side until it hits frame or no obstacles
+def side_blockage(mapa, pos, obstacles, side_info):
+    rows_lim, cols_lim = len(mapa)-1, len(mapa[0])-1
+    # if has reached a place in the frame, then it is blocked
+    if in_frame(rows_lim, cols_lim, pos):
+        print(f"WARNING: {pos} is in frame!")
+        return True
+    
+    print(f"[side] CHECKING POS{pos}:")
+    x, y = pos[0], pos[1]
+    pos_obst = []
+    if side_info == "l":
+        side = x-1
+        sides_pos = [(side, y), (side, y-1), (side, y+1)]
+    elif side_info == "t":
+        side = y-1
+        sides_pos = [(x, side), (x-1, side), (x+1, side)]
+    elif side_info == "r":
+        side = x+1
+        sides_pos = [(side, y), (side, y-1), (side, y+1)]
+    else:
+        side = y+1
+        sides_pos = [(x, side), (x-1, side), (x+1, side)]
+
+    for obst in obstacles:
+        # if obstacle is in one of the sides
+        if obst in sides_pos:
+            pos_obst.append(obst)
+        
+    print("pos", pos_obst)
+
+    return atleast_one_true([side_blockage(mapa, obst, obstacles_around(mapa, obst), side_info) for obst in pos_obst])
+
+def atleast_one_true(lista):
+    return [e for e in lista if e] != []  
+
+def in_frame(rows_lim, cols_lim, pos):
+    return pos[0] == 0 or pos[0] == rows_lim or pos[1] == 0 or pos[1] == cols_lim
 
 # DO NOT CHANGE THE LINES BELLOW
 # You can change the default values using the command line, example:

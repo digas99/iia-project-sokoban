@@ -137,14 +137,17 @@ def draw_background(mapa):
     background = pygame.Surface(scale((map_x+2, map_y)))
     for x in range(mapa.size[0]+2):
         for y in range(mapa.size[1]):
+            wx, wy = scale((x, y))
             if x < mapa.size[0]:
-                wx, wy = scale((x, y))
                 background.blit(SPRITES, (wx, wy), (*PASSAGE, *scale((1, 1))))
                 if mapa.get_tile((x, y)) == Tiles.WALL:
                     background.blit(SPRITES, (wx, wy), (*WALL, *scale((1, 1))))
                 if mapa.get_tile((x, y)) in [Tiles.GOAL, Tiles.BOX_ON_GOAL, Tiles.MAN_ON_GOAL]:
                     background.blit(SPRITES, (wx, wy), (*GOAL, *scale((1, 1))))
-
+            else:
+                print(SPRITES)
+                background.blit(SPRITES, (wx, wy), (*GOAL, *scale((1, 1))))
+        print(x)
     return background
 
 
@@ -186,7 +189,8 @@ async def main_loop(queue):
         mapa = Map(newgame_json["map"])
     except (KeyError, FileNotFoundError):
         mapa = Map("levels/1.xsb")  # Fallback to initial map
-    SCREEN = pygame.display.set_mode(scale(mapa.size))
+    map_x, map_y = mapa.size
+    SCREEN = pygame.display.set_mode(scale((map_x+2, map_y)))
     SPRITES = pygame.image.load("data/sokoban.png").convert_alpha()
 
     BACKGROUND = draw_background(mapa)

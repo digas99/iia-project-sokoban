@@ -4,7 +4,8 @@ import json
 import os
 import math
 import websockets 
-from astar import *
+from astar_box import *
+from astar_sokoban import *
 from mapa import Map
 
 async def agent_loop(server_address="localhost:8000", agent_name="student"):
@@ -41,21 +42,54 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 for row in range(rows):
                     for col in range(cols):
                         current_node = gridmap[row][col]
-                        current_pos = current_node.position
                         if current_node.symbol == '.':
                             goal = current_node
                         if current_node.symbol == '$':
                             start = current_node
 
-                path = search_boxes(gridmap, start, goal) 
+                path_caixa = search_boxes(gridmap, start, goal)
+                
                 # PRINTA O PATH 
-                for node in path:
+                for node in path_caixa:
+                    x, y = node.position
+                    print(x, y) 
+
+                for i in range(0, len(path_caixa)-1):
+                    print(i)
+                    if i == 0:
+                        x,y = state['keeper']
+                        start_sokoban = gridmap[x][y]
+                    else: 
+                        start_sokoban = path_caixa[i-1]
+
+                    obj_caixa = path_caixa[i+1]
+                    caixa = path_caixa[i]
+                    node = oposite(gridmap, caixa, obj_caixa)
+                    print("Start")
+                    print(start_sokoban.position)
+                    print(start_sokoban.symbol)
+                    print("Oposite")
+                    print(node.position)
+                    print(node.symbol)
+
+                    path_sokoban = search_path(gridmap, start_sokoban, node)
+
+                    # PRINTA O PATH 
+                    print("Acabou!!!!!!!!!!!")
+                    if path_sokoban != None:
+                        for node in path_sokoban:
+                            x, y = node.position
+                            print(x, y)     
+
+
+                # PRINTA O PATH 
+                for node in path_caixa:
                     x, y = node.position
                     print(x, y) 
 
                 print("\n\nTESTEEEEEEE")
-                pos = (2, 4)
-                direction = "horizontal"
+                pos = (1,4)
+                direction = "vertical"
                 print(f"Checking: {direction}\nPosition {pos} has blockage in both sides:",opp_sides_blockage(gridmap, pos, obstacles_around(gridmap, pos), direction))
                 
                 # import pprint

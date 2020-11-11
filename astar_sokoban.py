@@ -1,21 +1,7 @@
-
-class Node:
-
-    def __init__(self, symbol, position):
-        self.position = position
-        self.symbol = symbol
-        self.previous = None 
-        self.g = 0
-        self.h = 0
-
-# distance between each node and goal node ( manhattan distance)
-def heuristics(node, goal):
-    x1, y1 = node.position
-    x2, y2 = goal.position
-    return abs(x2 - x1) + abs(y2 - y1)
-
 # 4 children nodes for each node
-def children(node, grid):
+from node import *
+
+def children_path(node, grid):
     x,y = node.position
     childrenlist = []
     for l in range(len(grid)):
@@ -25,7 +11,7 @@ def children(node, grid):
     return [n for n in childrenlist if n.symbol == "-" or n.symbol == "@"]
 
 # A* algorithm
-def search_path(grid, start, goal):
+def search_pathkeeper(grid, start, goal):
     #not seen nodes
     openset = set()
     #seen nodes
@@ -41,7 +27,7 @@ def search_path(grid, start, goal):
         curr_node = min(openset, key=lambda n: n.g + n.h)
 
         #if node is goal box
-        if curr_node is goal:
+        if curr_node.eq(goal):
             path = []
             while curr_node != start:
                 path.append(curr_node)
@@ -55,7 +41,7 @@ def search_path(grid, start, goal):
         closedset.add(curr_node)
         
         # search for children of current node 
-        for n in children(curr_node, grid):
+        for n in children_path(curr_node, grid):
             #if its already seen, skip it
             if n in closedset:
                 continue

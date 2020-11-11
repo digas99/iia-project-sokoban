@@ -1,12 +1,4 @@
-
-class Node:
-
-    def __init__(self, symbol, position):
-        self.position = position
-        self.symbol = symbol
-        self.previous = None 
-        self.g = 0
-        self.h = 0
+from node import *
 
 def oposite(grid, box, node):
     x_box, y_box = box.position
@@ -15,14 +7,9 @@ def oposite(grid, box, node):
     y =  y_box + (y_box - y_node)
     return grid[x][y]
 
-# distance between each node and goal node ( manhattan distance)
-def heuristics(node, goal):
-    x1, y1 = node.position
-    x2, y2 = goal.position
-    return abs(x2 - x1) + abs(y2 - y1)
 
 # 4 children nodes for each node
-def children(node, grid):
+def children_boxes(node, grid):
     x,y = node.position
     childrenlist = []
     for l in range(len(grid)):
@@ -33,7 +20,7 @@ def children(node, grid):
     return [n for n in childrenlist if n.symbol != '#' and oposite(grid, node, n).symbol != '#']
 
 # A* algorithm
-def search_boxes(grid, start, goal):
+def search_pathboxes(grid, start, goal):
     #not seen nodes
     openset = set()
     #seen nodes
@@ -47,7 +34,7 @@ def search_boxes(grid, start, goal):
         curr_node = min(openset, key=lambda n: n.g + n.h)
 
         #if node is goal box
-        if curr_node == goal:
+        if curr_node.eq(goal):
             path = []
             while curr_node.previous:
                 path.append(curr_node)
@@ -61,7 +48,7 @@ def search_boxes(grid, start, goal):
         closedset.add(curr_node)
 
         # search for children of current node 
-        for n in children(curr_node, grid):
+        for n in children_boxes(curr_node, grid):
             #if its already seen, skip it
             if n in closedset:
                 continue

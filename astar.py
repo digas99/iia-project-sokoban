@@ -76,7 +76,7 @@ def search(grid, start, goal, type):
         # search for children of current node 
         if type == 'boxes':
             children = children_boxes
-        else if type == 'keeper':
+        elif type == 'keeper':
             children = children_keeper
         
         for n in children(curr_node, grid):

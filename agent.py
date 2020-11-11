@@ -1,5 +1,4 @@
-from astar_box import *
-from astar_sokoban import *
+from astar import *
 from mapa import Map
 
 class Agent:
@@ -38,7 +37,7 @@ class Agent:
             # fazer contas as hipotese
             for box in b_priority:
                 for goal in g_priority:
-                    path_caixa = search_pathboxes(self.gridmap, box, goal)
+                    path_caixa = search(self.gridmap, box, goal, 'boxes')
                     # PRINTA O PATH 
                     for node in path_caixa:
                         x, y = node.position

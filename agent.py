@@ -19,7 +19,7 @@ class Agent:
     def key(self):
         path = self.decision()
         # substituir aqui quando completo
-        return "S"
+        return 'S'
 
     def decision(self):
         print("Goal")
@@ -35,13 +35,10 @@ class Agent:
         g_priority = self.goal_priority()
 
         while(not solution):
-            gridmap_copy = copy_map(self.gridmap)
-            print(gridmap_copy)
-            print(self.gridmap)
             # fazer contas as hipotese
             for box in b_priority:
                 for goal in g_priority:
-                    path_caixa = search_pathboxes(gridmap_copy, box, goal)
+                    path_caixa = search_pathboxes(self.gridmap, box, goal)
                     # PRINTA O PATH 
                     for node in path_caixa:
                         x, y = node.position
@@ -121,6 +118,12 @@ class Agent:
         
     def goal_priority(self):
         return self.goals           #PRECISA DE SER COMPLETADA
+    
+    def walk(self, box_path):
+        
+
+
+        return walk(box_path[1:])
 
 def transpose(mapa):
     map_pos = str(mapa).split('\n')
@@ -136,16 +139,23 @@ def grid(mapa):
             grid[l][c] = Node(mapa[l][c], (l,c))
     return grid
 
-def copy_map(mapa): 
-    # obter coordenadas do array de arrays
-    rows, cols = len(mapa), len(mapa[0])
-    mapa_copy = [[0 for c in range(cols)] for l in range(rows)]
-    # percorre array
-    for row in range(rows):
-        # percorre duplo array
-        for col in range(cols):
-            mapa_copy[row][col] = mapa[row][col].copy()         
-    return mapa_copy
+
+
+
+
+
+
+
+# def copy_map(mapa): 
+#     # obter coordenadas do array de arrays
+#     rows, cols = len(mapa), len(mapa[0])
+#     mapa_copy = [[0 for c in range(cols)] for l in range(rows)]
+#     # percorre array
+#     for row in range(rows):
+#         # percorre duplo array
+#         for col in range(cols):
+#             mapa_copy[row][col] = mapa[row][col].copy()         
+#     return mapa_copy
 
 
 

@@ -1,4 +1,4 @@
-from astar import *
+from approach import *
 from mapa import Map
 
 class Agent:
@@ -14,6 +14,7 @@ class Agent:
         self.goals = self.get_goals()
         self.keeper = self.get_keeper()
         self.boxes = self.get_boxes()
+        self.approaches = [DeadLock(self.gridmap, state)]
 
     def key(self):
         path = self.decision()
@@ -21,72 +22,19 @@ class Agent:
         return 'S'
 
     def decision(self):
-        print("Goal")
-        print([i.position for i in self.goals])
-        print ("Keeper")
-        print([i.position for i in self.keeper])
-        print("Boxes")
-        print([i.position for i in self.boxes])
-
         solution = False
         
-        b_priority = self.box_priority()
-        g_priority = self.goal_priority()
+        while not solution and self.approaches != []:            
+            approach = self.approaches.pop()
+            # avalia prioridades
+            approach.set(self.boxes, self.goals)
+            # verifica solução
+            solution = approach.has_solution()
+            # obtem solução
+            path = approach.get_solution()
 
-        while(not solution):
-            # fazer contas as hipotese
-            for box in b_priority:
-                for goal in g_priority:
-                    path_caixa = search(self.gridmap, box, goal, 'boxes')
-                    # PRINTA O PATH 
-                    for node in path_caixa:
-                        x, y = node.position
-                        print(x, y)
-                    return [] 
-           # tentar 1 hipotese
-           
-           # faz contas
-           
-           # se falhar descarta hipotese
         return [] 
-          
-      
-                
-                
 
-                # for i in range(0, len(path_caixa)-1):
-                #     print(i)
-                #     if i == 0:
-                #         x,y = state['keeper']
-                #         start_sokoban = gridmap[x][y]
-                #     else: 
-                #         start_sokoban = path_caixa[i-1]
-
-                #     obj_caixa = path_caixa[i+1]
-                #     caixa = path_caixa[i]
-                #     node = oposite(gridmap, caixa, obj_caixa)
-
-                #     path_sokoban = search_pathkeeper(gridmap, start_sokoban, node)
-
-                #     # PRINTA O PATH 
-                #     print("Acabou!!!!!!!!!!!")
-                #     if path_sokoban != None:
-                #         for node in path_sokoban:
-                #             x, y = node.position
-                #             print(x, y)     
-
-
-                # # PRINTA O PATH 
-                # for node in path_caixa:
-                #     x, y = node.position
-                #     print(x, y) 
-
-                #print("\n\nTESTEEEEEEE")
-                #pos = (1,4)
-                #direction = "vertical"
-                #print(f"Checking: {direction}\nPosition {pos} has blockage in both sides:",opp_sides_blockage(gridmap, pos, obstacles_around(gridmap, pos), direction))
-               
-             
     ######## Funções de update ########
     def get_goals(self):
         return self.__get_nodes('.') + self.__get_nodes('*')
@@ -111,19 +59,6 @@ class Agent:
                     nodes.append(current_node)                   
         return nodes
 
-    ######## Funções de decisão ########
-    def box_priority(self):
-        return self.boxes          #PRECISA DE SER COMPLETADA
-        
-    def goal_priority(self):
-        return self.goals           #PRECISA DE SER COMPLETADA
-    
-    def walk(self, box_path):
-        
-
-
-        return walk(box_path[1:])
-
 def transpose(mapa):
     map_pos = str(mapa).split('\n')
     return list(map(list, zip(*map_pos)))
@@ -137,39 +72,6 @@ def grid(mapa):
         for c in range(cols):
             grid[l][c] = Node(mapa[l][c], (l,c))
     return grid
-
-
-
-
-
-
-
-
-# def copy_map(mapa): 
-#     # obter coordenadas do array de arrays
-#     rows, cols = len(mapa), len(mapa[0])
-#     mapa_copy = [[0 for c in range(cols)] for l in range(rows)]
-#     # percorre array
-#     for row in range(rows):
-#         # percorre duplo array
-#         for col in range(cols):
-#             mapa_copy[row][col] = mapa[row][col].copy()         
-#     return mapa_copy
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # def obstacles_around(mapa, pos):
 #     rows_lim, cols_lim = len(mapa)-1, len(mapa[0])-1

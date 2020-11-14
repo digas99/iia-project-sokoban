@@ -7,6 +7,10 @@ class Node:
         self.g = 0
         self.h = 0
 
+def is_deadlock(grid, node):
+        ###########COMPLETAR AQUI PARA OS CANTOS
+    pass
+
 # distance between each node and goal node ( manhattan distance)
 def heuristics(node, goal):
     x1, y1 = node.position
@@ -31,7 +35,7 @@ def children_boxes(node, grid):
             if grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
                 childrenlist.append(grid[l][c])
 
-    return [n for n in childrenlist if n.symbol != '#' and oposite(grid, node, n).symbol != '#']
+    return [n for n in childrenlist if n.symbol != '#' and oposite(grid, node, n).symbol != '#']    ########## AND IS_DEADLOCK?? 
 
 
 def children_keeper(node, grid):

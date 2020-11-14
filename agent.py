@@ -1,4 +1,4 @@
-from approach import *
+from backtracking import *
 from mapa import Map
 
 class Agent:
@@ -14,7 +14,7 @@ class Agent:
         self.goals = self.get_goals()
         self.keeper = self.get_keeper()
         self.boxes = self.get_boxes()
-        self.approaches = [DeadLock(self.gridmap, state)]
+        #self.approaches = [Approach(self.gridmap, state)]
 
     def key(self):
         path = self.decision()
@@ -22,17 +22,22 @@ class Agent:
         return 'S'
 
     def decision(self):
-        solution = False
-        
-        while not solution and self.approaches != []:            
-            approach = self.approaches.pop()
-            # avalia prioridades
-            approach.set(self.boxes, self.goals)
-            # verifica solução
-            solution = approach.has_solution()
-            # obtem solução
-            path = approach.get_solution()
-
+        solution = False                                        ## MUDAR
+        path_options = []
+        for box in self.boxes:
+            path_options = path_options + children_boxes(box, self.gridmap)
+            #path = permutations(children_boxes(box, self.gridmap))
+        print([node.position for node in path_options])
+        final_path = permutations(path_options)
+        print([node.position for node in final_path])
+        # while not solution:            
+        #     #approach = self.approaches.pop()
+        #     # avalia prioridades
+            
+        #     # verifica solução
+        #     # solution = approach.has_solution()
+        #     # # obtem solução
+        #     # path = approach.get_solution()
         return [] 
 
     ######## Funções de update ########

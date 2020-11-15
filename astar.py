@@ -1,5 +1,7 @@
-class Node:
+import agent
+from deadlock import DeadlockAgent
 
+class Node:
     def __init__(self, symbol, position):
         self.position = position
         self.symbol = symbol
@@ -7,9 +9,8 @@ class Node:
         self.g = 0
         self.h = 0
 
-def is_deadlock(grid, node):
-        ###########COMPLETAR AQUI PARA OS CANTOS
-    pass
+    def is_deadlock(self, adjacents, uwanted_symbols):
+        return DeadlockAgent(self.position, adjacents, uwanted_symbols).check_all_deadlocks() if self.symbol != "#" and adjacents != None else False
 
 # distance between each node and goal node ( manhattan distance)
 def heuristics(node, goal):
@@ -28,24 +29,20 @@ def oposite(grid, box, node):
 
 # 4 children nodes for each node
 def children_boxes(node, grid):
-    x,y = node.position
-    childrenlist = []
-    for l in range(len(grid)):
-        for c in range(len(grid[0])):
-            if grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
-                childrenlist.append(grid[l][c])
-
-    return [n for n in childrenlist if n.symbol != '#' and oposite(grid, node, n).symbol != '#']    ########## AND IS_DEADLOCK?? 
-
+    return [n for n in __children(node, grid) if n.symbol != '#' and oposite(grid, node, n).symbol != '#' and not n.is_deadlock(__children(n, grid), ["#"])]    ########## AND IS_DEADLOCK?? 
 
 def children_keeper(node, grid):
+    return [n for n in __children(node, grid) if n.symbol == "-" or n.symbol == "@"]
+
+def __children(node, grid):
     x,y = node.position
     childrenlist = []
     for l in range(len(grid)):
         for c in range(len(grid[0])):
             if grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
                 childrenlist.append(grid[l][c])
-    return [n for n in childrenlist if n.symbol == "-" or n.symbol == "@"]
+    return childrenlist
+
 
 # A* algorithm
 def search(grid, start, goal, type):
@@ -77,7 +74,7 @@ def search(grid, start, goal, type):
         openset.remove(curr_node)
         closedset.add(curr_node)
         
-        # search for children of current node 
+        #search for children of current node 
         if type == 'boxes':
             children = children_boxes
         elif type == 'keeper':
@@ -103,8 +100,3 @@ def search(grid, start, goal, type):
                 if n != start:
                     n.previous = curr_node
                 openset.add(n)
-        
-        
-
-
-    

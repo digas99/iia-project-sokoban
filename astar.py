@@ -9,8 +9,8 @@ class Node:
         self.g = 0
         self.h = 0
 
-    def is_deadlock(self, adjacents, uwanted_symbols):
-        return DeadlockAgent(self.position, adjacents, uwanted_symbols).check_all_deadlocks() if self.symbol != "#" and adjacents != None else False
+    def is_deadlock(self, adjacents, unwanted_symbols):
+        return DeadlockAgent(self.position, adjacents, unwanted_symbols).check_all_deadlocks() if self.symbol != "#" and adjacents != None else False
 
 # distance between each node and goal node ( manhattan distance)
 def heuristics(node, goal):

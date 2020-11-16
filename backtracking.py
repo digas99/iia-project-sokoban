@@ -1,20 +1,44 @@
 from astar import *
-from itertools import permutations
+
+class Backtracking:
+    def __init__(self, gridmap, state):
+        self.gridmap = gridmap
+        self.state = state
+        self.boxes = state['boxes']         # refreshes every frame 
+        self.keeper = state['keeper']
+
+    def backtracking():
+        visited = []
+        options = []
+        #solution = []
+        for box in self.boxes:
+            options = children_boxes(box, self.grimap)
+            for option in options:
+                if visited != []:
+                    refresh_map()
+                    visited.append(option)
+                    options.pop()
+                else:
+                    if search(self.gridmap, self.keeper, oposite(self.grid, box, option), 'keeper') != []: # verifica se o path do keeper é possivel até à caixa
+                    #se for possivel
+                       # é deadlock?
+                       visited.append(optionq)
+                    else: 
+                        # proxima caixa
+                        options.pop()
+                    
 
 
-def backtracking(options, ):
-
-
-def __is_solution():
-
-
-
-def __process_solution():
 
 
 
 
-def __get_candidates():
+
+
+
+
+
+
 
     #     # Verificação de solução possivel
     #     self.search_solution = True

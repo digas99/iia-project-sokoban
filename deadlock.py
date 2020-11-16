@@ -4,7 +4,7 @@ class DeadlockAgent:
 		self.obstacles = [adjacent.position for adjacent in adjacents if adjacent.symbol in unwanted_symbols]
 
 	def check_all_deadlocks(self):
-		return any([self.deadlock_corner()])
+		return any([function(self) for name, function in DeadlockAgent.__dict__.items() if callable(function) and name not in ["__init__", "check_all_deadlocks"]])
 
 	def deadlock_corner(self):
 		x, y = self.position

@@ -12,7 +12,7 @@ class Node:
     def is_deadlock(self, adjacents, unwanted_symbols):
         return DeadlockAgent(self.position, adjacents, unwanted_symbols).check_all_deadlocks() if self.symbol != "#" and adjacents != None else False
 
-# distance between each node and goal node ( manhattan distance)
+# distance between each node and goal node (manhattan distance)
 def heuristics(node, goal):
     x1, y1 = node.position
     x2, y2 = goal.position
@@ -43,9 +43,25 @@ def __children(node, grid):
                 childrenlist.append(grid[l][c])
     return childrenlist
 
+def moves(boxes, grid):
+    possible_moves = []             # has a tuple of (node, and possible move)
+    for box in boxes:
+        children = children_boxes(box, grid)
+        x_box, y_box = box.position
+        for child in children:
+            x_child, y_child = child.position
+            if (x_box - x_child, y_box - y_child) == (1,0):
+                possible_moves.append((box, 'left'))
+            if (x_box - x_child, y_box - y_child) == (0,1):
+                possible_moves.append((box, 'up'))
+            if (x_box - x_child, y_box - y_child) == (-1,0):
+                possible_moves.append((box, 'right'))
+            if (x_box - x_child, y_box - y_child) == (0,-1):
+                possible_moves.append((box, 'down'))
+    return possible_moves
 
 # A* algorithm
-def search(grid, start, goal, type):
+def search(grid):
     #not seen nodes
     openset = set()
     #seen nodes
@@ -55,7 +71,7 @@ def search(grid, start, goal, type):
     curr_node.g = 0
 
     openset.add(curr_node)
-    
+
     while openset:
         #finds the node with the lowest f function
         curr_node = min(openset, key=lambda n: n.g + n.h)

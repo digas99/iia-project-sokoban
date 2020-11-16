@@ -1,7 +1,6 @@
 #from backtracking import *
 from mapa import Map
-from astar import Node
-import astar
+from astar import *
 
 class Agent:
 
@@ -16,7 +15,7 @@ class Agent:
         self.goals = self.get_goals()
         self.keeper = self.get_keeper()
         self.boxes = self.get_boxes()
-        #self.approaches = [Approach(self.gridmap, state)]
+        #self...
 
     def key(self):
         path = self.decision()
@@ -26,14 +25,15 @@ class Agent:
     def decision(self):
         solution = False                                        ## MUDAR
         path_options = []
+            #path_options += children_boxes(box, self.gridmap)
+            #print([box.position for box in self.boxes])
+        print([(tup[0].position, tup[1]) for tup in moves(self.boxes, self.gridmap)])
         for box in self.boxes:
-            path_options += astar.children_boxes(box, self.gridmap)
-            #path = permutations(children_boxes(box, self.gridmap))
-        print([node.position for node in path_options])
-        # final_path = permutations(path_options)
+            print([(tup[0].position, tup[1]) for tup in moves(children_boxes(box, self.gridmap), self.gridmap)])
+        #print([node.position for node in path_options])
         # print([node.position for node in final_path])
         # while not solution:            
-        #     #approach = self.approaches.pop()
+        #     #approach = self.options.pop()
         #     # avalia prioridades
             
         #     # verifica solução

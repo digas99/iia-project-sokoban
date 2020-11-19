@@ -22,8 +22,18 @@ else
 	fi
 fi
 
-gnome-terminal --tab -- bash -c "${VENV}pip3 -V; python3 server.py"
-gnome-terminal --tab -- bash -c "${VENV}pip3 -V; python3 viewer.py"
+gnome-terminal --tab --title="SOKOBAN SERVER" -- bash -c "${VENV}pip3 -V;echo ""; python3 server.py"
+gnome-terminal --tab --title="SOKOBAN VIEWER" -- bash -c "${VENV}pip3 -V;echo ""; python3 viewer.py"
+
+# check if xdotool is installed
+if ! command -v xdotool &> /dev/null;
+then
+	echo $'Couldn\'t return focus to first tab because xdtool missing.\nPlease consider installing it with:\n$ sudo apt install xdotool\n'
+else
+	# change back to first tab
+	xdotool key alt+1
+fi
 
 pip3 -V
+echo ""
 python3 student.py

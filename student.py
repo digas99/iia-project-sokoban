@@ -2,7 +2,6 @@ import asyncio
 import getpass
 import json
 import os
-import math
 import websockets 
 from agent import *
 
@@ -26,10 +25,11 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                     await websocket.recv()
                 )  # receive game state, this must be called timely or your game will get out of sync with the server
                 
+                print(state)
                 agent.update(state)
                 key = agent.key()
                 break
-                # print(Map(f"levels/{state['level']}.xsb"))
+                print(Map(f"levels/{state['level']}.xsb"))
                 await websocket.send(
                     json.dumps({"cmd": "key", "key": key})
                 )  # send key command to server - you must implement this send in the AI agent

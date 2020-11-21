@@ -1,13 +1,14 @@
 #from backtracking import *
 from mapa import Map
 from astar import *
+from copy import deepcopy
 
 class Agent:
 
     def __init__(self, mapa):
         # boxes = state['boxes']
         # print(boxes)
-        self.tmap = transpose(mapa) # 1. talvez redundante; retirar?
+        self.tmap = transpose(mapa)
 
     def update(self, state):
         self.state = state
@@ -15,7 +16,6 @@ class Agent:
         self.goals = self.get_goals()
         self.keeper = self.get_keeper()
         self.boxes = self.get_boxes()
-        #self...
 
     def key(self):
         path = self.decision()
@@ -24,12 +24,17 @@ class Agent:
 
     def decision(self):
         solution = False                                        ## MUDAR
-        path_options = []
-            #path_options += children_boxes(box, self.gridmap)
-            #print([box.position for box in self.boxes])
-        print([(tup[0].position, tup[1]) for tup in moves(self.boxes, self.gridmap)])
-        for box in self.boxes:
-            print([(tup[0].position, tup[1]) for tup in moves(children_boxes(box, self.gridmap), self.gridmap)])
+        a = Astar(self.gridmap, self.boxes, self.goals, self.keeper)  
+        ############ TESTING #########################
+        # for box in self.boxes:
+        #     for goal in self.goals:
+        #         if goal.symbol == '*' and box.symbol == '$':
+        #             continue    # ignora este tipo de goal porque está ocupado
+        children = a.children_boxes(self.boxes[0])
+        for child in children:
+            a.children_boxes(child)
+        return []
+
         #print([node.position for node in path_options])
         # print([node.position for node in final_path])
         # while not solution:            
@@ -40,7 +45,7 @@ class Agent:
         #     # solution = approach.has_solution()
         #     # # obtem solução
         #     # path = approach.get_solution()
-        return [] 
+
 
     ######## Funções de update ########
     def get_goals(self):
@@ -79,14 +84,3 @@ def grid(mapa):
         for c in range(cols):
             grid[l][c] = Node(mapa[l][c], (l,c))
     return grid
-
-# def obstacles_around(mapa, node):
-#     #print(pos)
-#     rows_lim, cols_lim = len(mapa)-1, len(mapa[0])-1
-#     #if not in_frame(rows_lim, cols_lim, pos):
-#     x, y = node.pos
-#     around = [(x-1, y), (x-1, y-1), (x, y-1), (x+1, y-1), (x+1, y), (x+1, y+1), (x, y+1), (x-1, y+1)]
-#     return [square for square in around if mapa[square[0]][square[1]].symbol in ['#', '$', '*']]
-
-# def in_frame(rows_lim, cols_lim, pos):
-#     return pos[0] == 0 or pos[0] == rows_lim or pos[1] == 0 or pos[1] == cols_lim

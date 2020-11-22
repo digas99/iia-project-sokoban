@@ -1,7 +1,6 @@
 #from backtracking import *
 from mapa import Map
 from astar import *
-from copy import deepcopy
 
 class Agent:
 
@@ -9,6 +8,7 @@ class Agent:
         # boxes = state['boxes']
         # print(boxes)
         self.tmap = transpose(mapa)
+        self.grid_states = []       # everytime a move is made old gridmap goes here as backup
 
     def update(self, state):
         self.state = state
@@ -26,13 +26,8 @@ class Agent:
         solution = False                                        ## MUDAR
         a = Astar(self.gridmap, self.boxes, self.goals, self.keeper)  
         ############ TESTING #########################
-        # for box in self.boxes:
-        #     for goal in self.goals:
-        #         if goal.symbol == '*' and box.symbol == '$':
-        #             continue    # ignora este tipo de goal porque está ocupado
-        children = a.children_boxes(self.boxes[0])
-        for child in children:
-            a.children_boxes(child)
+        
+
         return []
 
         #print([node.position for node in path_options])
@@ -45,6 +40,29 @@ class Agent:
         #     # solution = approach.has_solution()
         #     # # obtem solução
         #     # path = approach.get_solution()
+
+    def move(self, box, nextpos_box): #all nodes
+        self.grid_states.append(self.gridmap)            # backsup previews state
+        #keeper.symbol = '-'
+        #nextpos_keeper = '@'
+        if nextpos_box.symbol == '-':
+            if  box.symbol == '$':
+                nextpos_box.symbol = '$'
+                box.symbol == '-'
+            elif box.symbol == '*':
+                box.symbol = '.'
+                nextpos_box.symbol = '$'
+        elif nextpos_box.symbol == '.':
+            if box.symbol = '$':
+                nextpos_box.symbol = '*' 
+                box.symbol = '-'
+            elif box.symbol = '*':
+                nextpos_box.symbol = '*' 
+                box.symbol = '.'
+    
+
+    def reset_gridmap(self):
+        self.gridmap = self.grid_states.pop()
 
 
     ######## Funções de update ########

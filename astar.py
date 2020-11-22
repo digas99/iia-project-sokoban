@@ -12,6 +12,12 @@ class Node:
     def is_deadlock(self, adjacents, unwanted_symbols):
         return DeadlockAgent(self.position, adjacents, unwanted_symbols).check_all_deadlocks() if self.symbol != "#" and adjacents != None else False
 
+    def is_stuck(self):
+        if self.children_boxes == []:
+            return True
+        else: 
+            return False
+
 class Astar:
     def __init__(self, grid, boxes, goals, keeper):
         self.grid = grid

@@ -28,7 +28,6 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 print(state)
                 agent.update(state)
                 key = agent.key()
-                break
                 print(Map(f"levels/{state['level']}.xsb"))
                 await websocket.send(
                     json.dumps({"cmd": "key", "key": key})

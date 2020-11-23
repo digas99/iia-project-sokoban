@@ -30,7 +30,7 @@ class Agent:
                 keys.append('d')
             if  (x - x_next, y - y_next) == (0,-1):
                 keys.append('s')
-        return 'd' 
+        return keys
 
     def decision(self):
         solution = False  

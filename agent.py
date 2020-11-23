@@ -8,62 +8,61 @@ class Agent:
         # boxes = state['boxes']
         # print(boxes)
         self.tmap = transpose(mapa)
-        self.grid_states = []       # everytime a move is made old gridmap goes here as backup
 
     def update(self, state):
         self.state = state
-        self.gridmap = grid(self.tmap) # 1.trocar aqui em 1
+        self.gridmap = grid(self.tmap)
         self.goals = self.get_goals()
         self.keeper = self.get_keeper()
         self.boxes = self.get_boxes()
 
     def key(self):
         path = self.decision()
-        # substituir aqui quando completo
-        return 'S'
+        keys = []
+        for i in range(len(path)-1):
+            x, y = path[i].position 
+            x_next, y_next = path[i+1].position
+            if (x - x_next, y - y_next) == (1,0):
+                keys.append('a')
+            if  (x - x_next, y - y_next) == (0,1):
+                keys.append('w')
+            if  (x - x_next, y - y_next) == (-1,0):
+                keys.append('d')
+            if  (x - x_next, y - y_next) == (0,-1):
+                keys.append('s')
+        return 'd' 
 
     def decision(self):
-        solution = False                                        ## MUDAR
-        a = Astar(self.gridmap, self.boxes, self.goals, self.keeper)  
+        solution = False  
+        PathFindingNode.grid = self.gridmap  
+                                           
         ############ TESTING #########################
+        a = Astar(self.keeper[0], self.goals[0])
+        path = a.search()
         
 
-        return []
+        return path
 
-        #print([node.position for node in path_options])
-        # print([node.position for node in final_path])
-        # while not solution:            
-        #     #approach = self.options.pop()
-        #     # avalia prioridades
-            
-        #     # verifica solução
-        #     # solution = approach.has_solution()
-        #     # # obtem solução
-        #     # path = approach.get_solution()
 
-    def move(self, box, nextpos_box): #all nodes
-        self.grid_states.append(self.gridmap)            # backsup previews state
-        #keeper.symbol = '-'
-        #nextpos_keeper = '@'
-        if nextpos_box.symbol == '-':
-            if  box.symbol == '$':
-                nextpos_box.symbol = '$'
-                box.symbol == '-'
-            elif box.symbol == '*':
-                box.symbol = '.'
-                nextpos_box.symbol = '$'
-        elif nextpos_box.symbol == '.':
-            if box.symbol = '$':
-                nextpos_box.symbol = '*' 
-                box.symbol = '-'
-            elif box.symbol = '*':
-                nextpos_box.symbol = '*' 
-                box.symbol = '.'
-    
-
-    def reset_gridmap(self):
-        self.gridmap = self.grid_states.pop()
-
+    # def move(self, box, nextpos_box): 
+    #     box.gridmap = deepcopy(self.gridmap)
+    #     #keeper.symbol = '-'
+    #     #nextpos_keeper = '@'
+    #     if nextpos_box.symbol == '-':
+    #         if  box.symbol == '$':
+    #             nextpos_box.symbol = '$'
+    #             box.symbol == '-'
+    #         elif box.symbol == '*':
+    #             box.symbol = '.'
+    #             nextpos_box.symbol = '$'
+    #     elif nextpos_box.symbol == '.':
+    #         if box.symbol == '$':
+    #             nextpos_box.symbol = '*' 
+    #             box.symbol = '-'
+    #         elif box.symbol == '*':
+    #             nextpos_box.symbol = '*' 
+    #             box.symbol = '.'
+    #     box.nextpos_box.gridmap = deepcopy(self.gridmap)
 
     ######## Funções de update ########
     def get_goals(self):
@@ -100,5 +99,5 @@ def grid(mapa):
     grid = [[0 for c in range(cols)] for l in range(lines)]
     for l in range(lines):
         for c in range(cols):
-            grid[l][c] = Node(mapa[l][c], (l,c))
+            grid[l][c] = PathFindingNode(mapa[l][c], (l,c))
     return grid

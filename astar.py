@@ -1,6 +1,5 @@
 import agent
 from copy import deepcopy
-#from deadlock import DeadlockAgent
 
 class PathFindingNode:                      
 
@@ -36,10 +35,6 @@ class PathFindingNode:
         x1, y1 = self.position
         x2, y2 = node.position
         return abs(x2 - x1) + abs(y2 - y1)
-
-    # def is_deadlock(self, adjacents, unwanted_symbols):
-    #     return DeadlockAgent(self.position, adjacents, unwanted_symbols).check_all_deadlocks() if self.symbol != "#" and adjacents != None else False
- 
 
 class GameStateNode:
     def __init__(self, gridstate=None, movement=None):
@@ -216,34 +211,6 @@ class Astar:
                     if n != self.start:
                         n.previous = curr_node
                     openset.add(n)
-
-    
-
-
-    # def children_boxes(self, node):                                                                                       #not n.is_deadlock(self.children(n), ["#"])  
-    #     return [n for n in node.children() if n.symbol != '#' and self.opposite(node, n).symbol != '#' and self.legal_move(node, n)]    ########## AND IS_DEADLOCK?? 
-
-    # def children_keeper(self):
-    #     return [n for n in node.children() if n.symbol == "-" or n.symbol == "@"]
-
-
-
-# def moves(boxes, grid):
-#     possible_moves = []             # has a tuple of (node, and possible move)
-#     for box in boxes:
-#         children = children_boxes(box, grid)
-#         x_box, y_box = box.position
-#         for child in children:
-#             x_child, y_child = child.position
-#             if (x_box - x_child, y_box - y_child) == (1,0):
-#                 possible_moves.append((box, 'left'))
-#             if (x_box - x_child, y_box - y_child) == (0,1):
-#                 possible_moves.append((box, 'up'))
-#             if (x_box - x_child, y_box - y_child) == (-1,0):
-#                 possible_moves.append((box, 'right'))
-#             if (x_box - x_child, y_box - y_child) == (0,-1):
-#                 possible_moves.append((box, 'down'))
-#     return possible_moves
 
 
 

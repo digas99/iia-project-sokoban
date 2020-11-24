@@ -28,7 +28,7 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 print(state)
                 agent.update(state)
                 key = agent.key()
-                print(Map(f"levels/{state['level']}.xsb"))
+                #print(Map(f"levels/{state['level']}.xsb"))
                 await websocket.send(
                     json.dumps({"cmd": "key", "key": key})
                 )  # send key command to server - you must implement this send in the AI agent
@@ -42,5 +42,5 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
 loop = asyncio.get_event_loop()
 SERVER = os.environ.get("SERVER", "localhost")
 PORT = os.environ.get("PORT", "8000")
-NAME = os.environ.get("NAME", getpass.getuser())
+NAME = os.environ.get("NAME", "katyusha") #getpass.getuser()
 loop.run_until_complete(agent_loop(f"{SERVER}:{PORT}", NAME))

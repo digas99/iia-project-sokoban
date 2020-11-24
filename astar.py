@@ -1,4 +1,5 @@
 import agent
+from copy import deepcopy
 #from deadlock import DeadlockAgent
 
 class PathFindingNode:                      
@@ -13,13 +14,13 @@ class PathFindingNode:
         self.h = 0
     
     def __eq__(self, other):
-        if self.position == other.position and self.symbol == other.symbol and self.previous == other.previous and self.g == other.g and self.h == other.h:
+        if self.position == other.position and self.symbol == other.symbol:
             return True
         else:
             return False
 
     def __hash__(self):
-        return hash((self.position, self.symbol, self.previous, self.g, self.h))
+        return hash((self.position, self.symbol))
 
     def children(self):
         x,y = self.position
@@ -28,34 +29,48 @@ class PathFindingNode:
             for c in range(len(self.grid[0])):
                 if self.grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
                     childrenlist.append(self.grid[l][c])
-        return [n for n in childrenlist if n.symbol == "-" or n.symbol == "@" or n.symbol == '.']
+        return [n for n in childrenlist if n.symbol in ['-', '@', '.', '+']]
 
+    #distance between each node and goal node (manhattan distance)
+    def heuristics(self, node):
+        x1, y1 = self.position
+        x2, y2 = node.position
+        return abs(x2 - x1) + abs(y2 - y1)
 
     # def is_deadlock(self, adjacents, unwanted_symbols):
     #     return DeadlockAgent(self.position, adjacents, unwanted_symbols).check_all_deadlocks() if self.symbol != "#" and adjacents != None else False
-
-    # def is_stuck(self):
-    #     if self.children_boxes == []:
-    #         return True
-    #     else: 
-    #         return False    
+ 
 
 class GameStateNode:
-    def __init__(self, move):
-        self.move = move
-        self.gridstate = None
+    def __init__(self, gridstate=None, movement=None):
+        self.gridstate = deepcopy(gridstate)
+        self.movement = movement
+        if movement != None:
+            boxpos, nextboxpos = movement
+            self.move(boxpos, nextboxpos, self.get_keeper())
+
         self.previous = None
         self.g = 0
         self.h = 0
+        self.final = False
 
     def __eq__(self, other):
-        if self.move == other.move and self.gridstate == other.gridstate and self.previous == other.previous and self.g == other.g and self.h == other.h:
-            return True
-        else:
-            return False
+        if self.final or other.final:
+            return self.get_boxes() == other.get_boxes()
+        return self.movement == other.movement and self.gridstate == other.gridstate
     
     def __hash__(self):
-        return hash((self.move, self.gridstate, self.previous, self.g, self.h))
+        return hash((self.movement, str(self.gridstate)))
+
+    def __str__(self):
+        string = ""
+        lines = len(self.gridstate)
+        cols = len(self.gridstate[0])
+        for l in range(lines):
+            for c in range(cols):
+                string += self.gridstate[l][c].symbol
+            string += "\n"
+        return string
     
     def opposite(self, box, node):
         x_box, y_box = box.position
@@ -64,26 +79,90 @@ class GameStateNode:
         y =  y_box + (y_box - y_node)
         return self.gridstate[x][y]
 
-    def children(self):
-        x,y = self.position
-        childrenlist = []
-        for l in range(len(self.gridstate)):
-            for c in range(len(self.gridstate[0])):
-                if self.gridstate[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
-                    childrenlist.append(self.gridstate[l][c])   
-        return [n for n in childrenlist if n.symbol != '#' and self.opposite(self, n).symbol != '#'] 
+    def get_keeper(self):
+        lines = len(self.gridstate)
+        cols = len(self.gridstate[0])
+        for l in range(lines):
+            for c in range(cols):
+                if self.gridstate[l][c].symbol == '@' or self.gridstate[l][c].symbol == '+':
+                    return self.gridstate[l][c]
+    
+    def get_boxes(self):
+        boxes = []
+        lines = len(self.gridstate)
+        cols = len(self.gridstate[0])
+        for l in range(lines):
+            for c in range(cols):
+                if self.gridstate[l][c].symbol == '$' or self.gridstate[l][c].symbol == '*':
+                    boxes.append(self.gridstate[l][c])
+        return boxes
 
+    def legal_move(self, box, node):
+        a = Astar(self.get_keeper(), self.opposite(box, node))
+        if a.search() == None:
+            return False
+        else:
+            return True
+
+    def children(self):
+
+        PathFindingNode.grid = self.gridstate
+
+        result = []
+        
+        for box in self.get_boxes():
+            aux = []
+            x,y = box.position
+            for l in range(len(self.gridstate)):
+                for c in range(len(self.gridstate[0])):
+                    if self.gridstate[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
+                        aux.append(self.gridstate[l][c])   
+            ###### ATUALIZAÇÃO DO GRIDSTATE #######
+            childrenlist = [n for n in aux if n.symbol not in ['#', '$', '*'] and self.opposite(box, n).symbol != '#' and self.legal_move(box, n)] 
+            for child in childrenlist:
+                new_gamestate = GameStateNode(self.gridstate, (box.position, child.position))
+                result.append(new_gamestate)
+        
+        return result
+
+    def move(self, posbox, poschild, keeper):
+        #keeper
+        if keeper.symbol == '+':
+            keeper.symbol = '.'
+        elif keeper.symbol == '@':
+            keeper.symbol = '-'
+        # boxes
+        x_box, y_box = posbox
+        x_child, y_child = poschild
+        node_box = self.gridstate[x_box][y_box]
+        node_child = self.gridstate[x_child][y_child]
+        if node_child.symbol == '-':
+
+            if node_box.symbol == '$':
+                node_child.symbol = '$'
+                node_box.symbol = '@'
+
+            elif node_box.symbol == '*':
+                node_box.symbol = '+'
+                node_child.symbol = '$'
+
+        elif node_child.symbol == '.':
+
+            if node_box.symbol == '$':
+                node_child.symbol = '*' 
+                node_box.symbol = '@'
+
+            elif node_box.symbol == '*':
+                node_child.symbol = '*' 
+                node_box.symbol = '+'
+
+    def heuristics(self, node):
+        return 0
 
 class Astar:
     def __init__(self, start, goal):
         self.start = start 
         self.goal = goal
-
-    #distance between each node and goal node (manhattan distance)
-    def heuristics(self, node1, node2):
-        x1, y1 = node1.position
-        x2, y2 = node2.position
-        return abs(x2 - x1) + abs(y2 - y1)
 
     # A* algorithm
     def search(self):
@@ -114,6 +193,7 @@ class Astar:
             #check node as seen
             openset.remove(curr_node)
             closedset.add(curr_node)
+
             children_list = curr_node.children()
     
             for n in children_list:
@@ -132,7 +212,7 @@ class Astar:
                 else:
                     #calculate the g and h value for remaining nodes
                     n.g = curr_node.g + 1
-                    n.h = self.heuristics(n, self.goal)
+                    n.h = n.heuristics(self.goal)
                     if n != self.start:
                         n.previous = curr_node
                     openset.add(n)
@@ -165,14 +245,6 @@ class Astar:
 #                 possible_moves.append((box, 'down'))
 #     return possible_moves
 
-    # def get_move(self, move):
-    #     if move == 'a':     #left
-    #         return (1,0)
-    #     if move == 'w':     #up
-    #         return (0,1)
-    #     if move == 'd':     #right
-    #         return (-1, 0)
-    #     if move == 's':     # down
-    #         return (0,-1)
+
 
 

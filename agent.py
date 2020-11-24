@@ -1,4 +1,3 @@
-#from backtracking import *
 from mapa import Map
 from astar import *
 from copy import deepcopy
@@ -9,24 +8,34 @@ class Agent:
         # boxes = state['boxes']
         # print(boxes)
         self.mapa = mapa
+        self.keys = []
+        self.starting_grid = None
+        self.final_grid = None
+
+    def new_level(self, mapa):
+        self.mapa = mapa
+        self.starting_grid = None
 
     def update(self, state):
-        self.starting_grid = grid(self.mapa)
-        self.final_grid = self.final_state()
-
+        if self.starting_grid == None:
+            self.starting_grid = grid(self.mapa)
+            self.final_grid = self.final_state()
 
     def key(self):
-        moves = self.decision()
-
-            if (x - x_next, y - y_next) == (1,0):
-                keys.append('a')
-            if  (x - x_next, y - y_next) == (0,1):
-                keys.append('w')
-            if  (x - x_next, y - y_next) == (-1,0):
-                keys.append('d')
-            if  (x - x_next, y - y_next) == (0,-1):
-                keys.append('s')
-        return keys
+        if self.keys == []:
+            path = self.decision()
+            for i in range(len(path)-1):
+                y, x = path[i]
+                y_next, x_next = path[i+1]
+                if (x - x_next, y - y_next) == (1,0):
+                    self.keys.insert(0, ('a', path[i+1]))
+                elif (x - x_next, y - y_next) == (0,1):
+                    self.keys.insert(0, ('w', path[i+1]))
+                elif (x - x_next, y - y_next) == (-1,0):
+                    self.keys.insert(0, ('d', path[i+1]))
+                elif (x - x_next, y - y_next) == (0,-1):
+                    self.keys.insert(0, ('s', path[i+1]))
+        return self.keys.pop()
 
     def decision(self):
         ############ TESTING ######################
@@ -35,11 +44,31 @@ class Agent:
         goal.final = True
         #print(root)
         #print(goal)
-        a = Astar(root, goal)
-        path = a.search()
-        for step in path:
-            print(step)
-        return [step.movement for step in path]
+        astar_boxes = Astar(root, goal)
+        tree_state = astar_boxes.search()
+        path = self.keeper_path(tree_state)
+        return path
+
+    def keeper_path(self, tree_state):
+        path = []
+        for i in range(len(tree_state)-1):
+            childstate = tree_state[i]
+            keeper = childstate.get_keeper()
+            state = tree_state[i+1]
+            boxpos, nextboxpos = state.movement
+            x,y = boxpos
+            x_next, y_next = nextboxpos
+            box = state.gridstate[x][y]
+            nextbox = state.gridstate[x_next][y_next]
+            finish = state.opposite(box, nextbox)
+            PathFindingNode.grid = childstate.gridstate
+            astar_keeper = Astar(keeper, finish)
+            aux = astar_keeper.search() 
+            if aux == None:
+                aux = []
+            path = path + [node.position for node in aux] + [box.position] 
+        # print([node.position for node in path])
+        return path
 
     def final_state(self):
         finalstate = deepcopy(self.starting_grid)

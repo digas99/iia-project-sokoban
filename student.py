@@ -17,17 +17,28 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
         mapa = Map(game_properties["map"])
         print(mapa)
 
-        agent = Agent(mapa)
+        # sync with server
+        key = "" 
+        pos = None
 
+        agent = Agent(mapa)
         while True:
             try:
                 state = json.loads(
                     await websocket.recv()
                 )  # receive game state, this must be called timely or your game will get out of sync with the server
-                
-                print(state)
-                agent.update(state)
-                key = agent.key()
+                if "map" in state:
+                    # we got a new level
+                    agent.new_level(Map(state["map"]))
+                    key = ""
+                    pos = None
+                    # sync with server
+                else:
+                    y, x = state['keeper']
+                    if pos == None or pos == (x,y):
+                        agent.update(state)
+                        key, pos = agent.key()
+
                 #print(Map(f"levels/{state['level']}.xsb"))
                 await websocket.send(
                     json.dumps({"cmd": "key", "key": key})

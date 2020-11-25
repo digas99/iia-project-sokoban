@@ -22,7 +22,8 @@ logger = logging.getLogger("Map")
 logger.setLevel(logging.DEBUG)
 
 MAP_X_INCREASE = 4
-
+MAP_Y_INCREASE = 2
+ 
 KEEPER = {
     "up": (3 * 64, 4 * 64),
     "left": (3 * 64, 6 * 64),
@@ -140,26 +141,28 @@ def scale(pos):
 def draw_background(mapa):
     """Create background surface."""
     map_x, map_y = mapa.size
-    background = pygame.Surface(scale((map_x+MAP_X_INCREASE, map_y)))
+    background = pygame.Surface(scale((map_x+MAP_X_INCREASE, map_y+MAP_Y_INCREASE)))
     separator = True
     for x in range(map_x+MAP_X_INCREASE):
         if x == map_x+1:
             separator = False
-        for y in range(map_y):
+
+        for y in range(map_y+MAP_Y_INCREASE):
             wx, wy = scale((x, y))
-            if x < map_x:
+            if x < map_x and y < map_y:
                 background.blit(SPRITES, (wx, wy), (*PASSAGE, *scale((1, 1))))
                 if mapa.get_tile((x, y)) == Tiles.WALL:
                     background.blit(SPRITES, (wx, wy), (*WALL, *scale((1, 1))))
                 if mapa.get_tile((x, y)) in [Tiles.GOAL, Tiles.BOX_ON_GOAL, Tiles.MAN_ON_GOAL]:
                     background.blit(SPRITES, (wx, wy), (*GOAL, *scale((1, 1))))
-            else:  
-                if y == 0:
-                    background.blit(SPRITES, (wx,wy), (*GRAY_PASSAGE, *scale((1, 1))))
-                elif separator:
-                    background.blit(SPRITES, (wx,wy), (*BLACK_SURFACE, *scale((1, 1))))  
+            else:
+                if y > map_y:
+                    background.blit(SPRITES, (wx,wy), (*GRAY_PASSAGE, *scale((1, 1))))  
                 else:
-                    background.blit(SPRITES, (wx,wy), (*GREEN_PASSAGE, *scale((1, 1))))
+                    if separator or y == map_y:
+                        background.blit(SPRITES, (wx,wy), (*BLACK_SURFACE, *scale((1, 1))))  
+                    else:
+                        background.blit(SPRITES, (wx,wy), (*GREEN_PASSAGE, *scale((1, 1))))
     return background
 
 
@@ -202,7 +205,7 @@ async def main_loop(queue):
     except (KeyError, FileNotFoundError):
         mapa = Map("levels/1.xsb")  # Fallback to initial map
     map_x, map_y = mapa.size
-    SCREEN = pygame.display.set_mode(scale((map_x+MAP_X_INCREASE, map_y)))
+    SCREEN = pygame.display.set_mode(scale((map_x+MAP_X_INCREASE, map_y+MAP_Y_INCREASE)))
     SPRITES = pygame.image.load("data/sokoban.png").convert_alpha()
 
     BACKGROUND = draw_background(mapa)
@@ -231,18 +234,20 @@ async def main_loop(queue):
             text = f"m, p, s: {state['score']}"
             draw_info(SCREEN, text.zfill(6), (5, 1))
 
-            margin = 30
+
+            margin_top = 30
+            margin_right = 30
             space_between_cols = 5
             
-            player_pos = 25
-            player_w, _ = draw_info(SCREEN, player, (-4000, player_pos))
-            draw_info(SCREEN, player, (SCREEN.get_width()-player_w-margin, player_pos), (252, 66, 66))
-            player_title_w, _ = draw_info(SCREEN, "Player: ", (-4000, player_pos))
-            draw_info(SCREEN, "Player: ", (SCREEN.get_width()-player_w-player_title_w-margin-space_between_cols, player_pos), (255, 255, 255))
+            player_h = SCREEN.get_height() - 40
+            player_w, _ = draw_info(SCREEN, player, (-4000, player_h))
+            draw_info(SCREEN, player, (SCREEN.get_width()-player_w-margin_right, player_h), (58, 240, 240))
+            player_title_w, _ = draw_info(SCREEN, "Player: ", (-4000, player_h))
+            draw_info(SCREEN, "Player: ", (SCREEN.get_width()-player_w-player_title_w-margin_right-space_between_cols, player_h), (255, 255, 255))
 
-            bestround_pos = player_pos+50
+            bestround_pos = margin_top
             bestround_w, _ = draw_info(SCREEN, "Best Round", (-4000, bestround_pos))
-            draw_info(SCREEN, "Best Round", (SCREEN.get_width()-bestround_w-margin-22, bestround_pos), (255, 242, 0))
+            draw_info(SCREEN, "Best Round", (SCREEN.get_width()-bestround_w-margin_right-22, bestround_pos), (255, 242, 0))
 
             hs = HighScoresFetch(name=player)
             data_index = ["level", "timestamp", "", "score", "total_moves", "total_pushes", "total_steps"]
@@ -254,7 +259,7 @@ async def main_loop(queue):
                 splitted = best_entry['timestamp'].split("T")
                 info_w, _ = draw_info(SCREEN, splitted[0], (-4000, 0))
                 title_info_w, _ = draw_info(SCREEN, "Data: ", (-4000, 0))
-                title_fixed_size = info_w+title_info_w+margin+space_between_cols
+                title_fixed_size = info_w+title_info_w+margin_right+space_between_cols
                 
                 for i, info in enumerate(data_index):
                     curr_data_index = data_index[i]
@@ -268,11 +273,11 @@ async def main_loop(queue):
                         splitted = content.split("T")
                         
                         info_w, _ = draw_info(SCREEN, splitted[0], (-4000, info_pos+i*20))
-                        draw_info(SCREEN, splitted[0], (SCREEN.get_width()-info_w-margin, info_pos+i*20), (255, 255, 255))
+                        draw_info(SCREEN, splitted[0], (SCREEN.get_width()-info_w-margin_right, info_pos+i*20), (255, 255, 255))
                         title_info_w, _ = draw_info(SCREEN, "Data: ", (-4000, info_pos+i*20))
                         draw_info(SCREEN, "Data: ", (SCREEN.get_width()-title_fixed_size, info_pos+i*20))
                         info_w, _ = draw_info(SCREEN, splitted[1], (-4000, info_pos+i*20))
-                        draw_info(SCREEN, splitted[1], (SCREEN.get_width()-info_w-margin, info_pos+(i+1)*20), (255, 255, 255))
+                        draw_info(SCREEN, splitted[1], (SCREEN.get_width()-info_w-margin_right, info_pos+(i+1)*20), (255, 255, 255))
                         continue
 
                     if curr_data_index == "total_moves":
@@ -285,13 +290,13 @@ async def main_loop(queue):
                         curr_data_index = "steps"                    
 
                     info_w, _ = draw_info(SCREEN, str(content), (-4000, info_pos+i*20))
-                    draw_info(SCREEN, str(content), (SCREEN.get_width()-info_w-margin, info_pos+i*20), (255, 255, 255))
+                    draw_info(SCREEN, str(content), (SCREEN.get_width()-info_w-margin_right, info_pos+i*20), (255, 255, 255))
                     title_info_w, _ = draw_info(SCREEN, format_string(curr_data_index)+": ", (-4000, info_pos+i*20))
                     draw_info(SCREEN, format_string(curr_data_index)+": ", (SCREEN.get_width()-title_fixed_size, info_pos+i*20))
             else:
                 info_w, _ = draw_info(SCREEN, "None", (-4000, 0))
                 title_info_w, _ = draw_info(SCREEN, "Data: ", (-4000, 0))
-                title_fixed_size = info_w+title_info_w+margin+space_between_cols
+                title_fixed_size = info_w+title_info_w+margin_right+space_between_cols
                 
                 for i, info in enumerate(data_index):
                     curr_data_index = data_index[i]
@@ -301,11 +306,11 @@ async def main_loop(queue):
 
                     if curr_data_index == "timestamp":
                         info_w, _ = draw_info(SCREEN, "None", (-4000, info_pos+i*20))
-                        draw_info(SCREEN, "None", (SCREEN.get_width()-info_w-margin, info_pos+i*20), (255, 255, 255))
+                        draw_info(SCREEN, "None", (SCREEN.get_width()-info_w-margin_right, info_pos+i*20), (255, 255, 255))
                         title_info_w, _ = draw_info(SCREEN, "Data: ", (-4000, info_pos+i*20))
                         draw_info(SCREEN, "Data: ", (SCREEN.get_width()-title_fixed_size, info_pos+i*20))
                         info_w, _ = draw_info(SCREEN, "None", (-4000, info_pos+i*20))
-                        draw_info(SCREEN, "None", (SCREEN.get_width()-info_w-margin, info_pos+(i+1)*20), (255, 255, 255))
+                        draw_info(SCREEN, "None", (SCREEN.get_width()-info_w-margin_right, info_pos+(i+1)*20), (255, 255, 255))
                         continue
 
                     if curr_data_index == "total_moves":
@@ -318,7 +323,7 @@ async def main_loop(queue):
                         curr_data_index = "steps"                    
 
                     info_w, _ = draw_info(SCREEN, "0", (-4000, info_pos+i*20))
-                    draw_info(SCREEN, "0", (SCREEN.get_width()-info_w-margin, info_pos+i*20), (255, 255, 255))
+                    draw_info(SCREEN, "0", (SCREEN.get_width()-info_w-margin_right, info_pos+i*20), (255, 255, 255))
                     title_info_w, _ = draw_info(SCREEN, format_string(curr_data_index)+": ", (-4000, info_pos+i*20))
                     draw_info(SCREEN, format_string(curr_data_index)+": ", (SCREEN.get_width()-title_fixed_size, info_pos+i*20))
 
@@ -403,7 +408,7 @@ async def main_loop(queue):
                     )
                     continue
                 map_x, map_y = mapa.size
-                SCREEN = pygame.display.set_mode(scale((map_x+MAP_X_INCREASE, map_y)))
+                SCREEN = pygame.display.set_mode(scale((map_x+MAP_X_INCREASE, map_y+MAP_Y_INCREASE)))
                 BACKGROUND = draw_background(mapa)
                 SCREEN.blit(BACKGROUND, (0, 0))
 

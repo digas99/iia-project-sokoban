@@ -220,7 +220,21 @@ async def main_loop(queue):
     }
 
     new_event = True
+
+    margin_top = 30
+    margin_right = 30
+    space_between_cols = 5
+
+    last_player = state['player']
+
+    data_index = ["level", "timestamp", "", "score", "total_moves", "total_pushes", "total_steps"]
+    hs = ""
+    best_entry = ""
+
     while True:
+        if "player" in state:
+            curr_player = state['player']
+
         SCREEN.blit(BACKGROUND, (0, 0))
         pygame.event.pump()
         if pygame.key.get_pressed()[pygame.K_ESCAPE]:
@@ -228,12 +242,15 @@ async def main_loop(queue):
 
         main_group.clear(SCREEN, clear_callback)
         boxes_group.clear(SCREEN, clear_callback)
-
-        margin_top = 30
-        margin_right = 30
-        space_between_cols = 5
         
         if "score" in state and "player" in state:
+            if last_player != curr_player:
+                print("here")
+                hs = HighScoresFetch(name=state['player'])
+                last_player = curr_player
+
+                best_entry = hs.get_best_entry(type="max", key="score")
+
             player = state['player']
             
             player_h = SCREEN.get_height() - 40
@@ -242,17 +259,12 @@ async def main_loop(queue):
             player_title_w, _ = draw_info(SCREEN, "Player: ", (-4000, player_h))
             draw_info(SCREEN, "Player: ", (SCREEN.get_width()-player_w-player_title_w-margin_right-space_between_cols, player_h), (255, 255, 255))
 
-            hs = HighScoresFetch(name=player)
-            data_index = ["level", "timestamp", "", "score", "total_moves", "total_pushes", "total_steps"]
-
-            if hs.data != []:
+            if hs != "" and hs.data != []:
                 bestround_pos = margin_top
                 bestround_w, _ = draw_info(SCREEN, "Best Round", (-4000, bestround_pos))
                 draw_info(SCREEN, "Best Round", (SCREEN.get_width()-bestround_w-margin_right-22, bestround_pos), (255, 242, 0))
 
                 info_pos = bestround_pos + 35
-
-                best_entry = hs.get_best_entry(type="max", key="score")
 
                 splitted = best_entry['timestamp'].split("T")
                 info_w, _ = draw_info(SCREEN, splitted[0], (-4000, 0))

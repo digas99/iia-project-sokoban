@@ -12,6 +12,7 @@ import pygame
 from consts import RANKS, Tiles
 from mapa import Map
 from game import reduce_score
+from fetch import HighScoresFetch
 
 logging.basicConfig(level=logging.DEBUG)
 logger_websockets = logging.getLogger("websockets")
@@ -210,12 +211,17 @@ async def main_loop(queue):
         boxes_group.clear(SCREEN, clear_callback)
 
         if "score" in state and "player" in state:
+            player = state['player']
             text = f"m, p, s: {state['score']}"
             draw_info(SCREEN, text.zfill(6), (5, 1))
-            text = str(state["player"]).rjust(32)
+            text = str(player).rjust(32)
             draw_info(SCREEN, text, (4000, 1))
-            text = "Boxes:"
-            draw_info(SCREEN, text.zfill(6), (50,1))
+  
+            if player != "player1":
+                best_entry = HighScoresFetch(name=state['player']).get_best_entry(type="max", key="score")
+                print("BEST",best_entry)
+                text = "Score: "+str(best_entry['score'])
+                draw_info(SCREEN, text.zfill(6), (50,1))
 
         if "level" in state:
             w, _ = draw_info(SCREEN, "level: ", (SCREEN.get_width() / 2, 1))
@@ -297,7 +303,8 @@ async def main_loop(queue):
                         state["level"],
                     )
                     continue
-                SCREEN = pygame.display.set_mode(scale(mapa.size))
+                map_x, map_y = mapa.size
+                SCREEN = pygame.display.set_mode(scale((map_x+2, map_y)))
                 BACKGROUND = draw_background(mapa)
                 SCREEN.blit(BACKGROUND, (0, 0))
 

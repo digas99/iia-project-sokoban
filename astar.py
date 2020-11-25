@@ -27,12 +27,6 @@ class PathFindingNode:
 
     def children(self):
         x,y = self.position
-        # childrenlist = []
-        # for l in range(len(self.grid)):
-        #     for c in range(len(self.grid[0])):
-        #         if self.grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
-        #             childrenlist.append(self.grid[l][c])
-        # return [n for n in childrenlist if n.symbol in ['-', '@', '.', '+']]
         return [n for n in [self.grid[l][c] for c in range(len(self.grid[0])) for l in range(len(self.grid)) if self.grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]] if n.symbol in ['-', '@', '.', '+']]
 
     #distance between each node and goal node (manhattan distance)
@@ -42,7 +36,7 @@ class PathFindingNode:
         return abs(x2 - x1) + abs(y2 - y1)
 
 class GameStateNode:
-    def __init__(self, gridstate=None, movement=None, goals=None):
+    def __init__(self, gridstate=None, movement=None):
         self.gridstate = deepcopy(gridstate)
         self.movement = movement
         if movement != None:
@@ -53,7 +47,6 @@ class GameStateNode:
         self.g = 0
         self.h = 0
         self.final = False
-        self.goals = goals
 
     def __eq__(self, other):
         if self.final or other.final:
@@ -87,16 +80,11 @@ class GameStateNode:
             for c in range(cols):
                 if self.gridstate[l][c].symbol == '@' or self.gridstate[l][c].symbol == '+':
                     return self.gridstate[l][c]
+
+    def get_goals(self):
+        return [self.gridstate[l][c] for c in range(len(self.gridstate[0])) for l in range(len(self.gridstate)) if self.gridstate[l][c].symbol in ['.', '*']]
     
     def get_boxes(self):
-        # boxes = []
-        # lines = len(self.gridstate)
-        # cols = len(self.gridstate[0])
-        # for l in range(lines):
-        #     for c in range(cols):
-        #         if self.gridstate[l][c].symbol == '$' or self.gridstate[l][c].symbol == '*':
-        #             boxes.append(self.gridstate[l][c])
-        # return boxes
         return [self.gridstate[l][c] for c in range(len(self.gridstate[0])) for l in range(len(self.gridstate)) if self.gridstate[l][c].symbol in ['$', '*']]
 
     def legal_move(self, box, node):
@@ -159,7 +147,7 @@ class GameStateNode:
                 node_box.symbol = '+'
 
     def heuristics(self, node):
-        return min([abs(goal.position[0] - box.position[0]) + abs(goal.position[1] - box.position[1]) for box in self.get_boxes() for goal in node.goals])
+        return min([abs(goal.position[0] - box.position[0]) + abs(goal.position[1] - box.position[1]) for box in self.get_boxes() for goal in self.get_goals()])
         #return 0
 
 class Astar:

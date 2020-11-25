@@ -1,5 +1,6 @@
 import agent
 from copy import deepcopy
+from deadlock import DeadlockAgent
 
 class PathFindingNode:                      
 
@@ -21,14 +22,18 @@ class PathFindingNode:
     def __hash__(self):
         return hash((self.position, self.symbol))
 
+    def is_deadlock(self, adjacents, unwanted_symbols):
+        return DeadlockAgent(self.position, adjacents, unwanted_symbols).check_all_deadlocks() if self.symbol != "#" and adjacents != None else False
+
     def children(self):
         x,y = self.position
-        childrenlist = []
-        for l in range(len(self.grid)):
-            for c in range(len(self.grid[0])):
-                if self.grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
-                    childrenlist.append(self.grid[l][c])
-        return [n for n in childrenlist if n.symbol in ['-', '@', '.', '+']]
+        # childrenlist = []
+        # for l in range(len(self.grid)):
+        #     for c in range(len(self.grid[0])):
+        #         if self.grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
+        #             childrenlist.append(self.grid[l][c])
+        # return [n for n in childrenlist if n.symbol in ['-', '@', '.', '+']]
+        return [n for n in [self.grid[l][c] for c in range(len(self.grid[0])) for l in range(len(self.grid)) if self.grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]] if n.symbol in ['-', '@', '.', '+']]
 
     #distance between each node and goal node (manhattan distance)
     def heuristics(self, node):
@@ -37,7 +42,7 @@ class PathFindingNode:
         return abs(x2 - x1) + abs(y2 - y1)
 
 class GameStateNode:
-    def __init__(self, gridstate=None, movement=None):
+    def __init__(self, gridstate=None, movement=None, goals=None):
         self.gridstate = deepcopy(gridstate)
         self.movement = movement
         if movement != None:
@@ -48,6 +53,7 @@ class GameStateNode:
         self.g = 0
         self.h = 0
         self.final = False
+        self.goals = goals
 
     def __eq__(self, other):
         if self.final or other.final:
@@ -66,7 +72,7 @@ class GameStateNode:
                 string += self.gridstate[l][c].symbol
             string += "\n"
         return string
-    
+
     def opposite(self, box, node):
         x_box, y_box = box.position
         x_node, y_node = node.position
@@ -83,14 +89,15 @@ class GameStateNode:
                     return self.gridstate[l][c]
     
     def get_boxes(self):
-        boxes = []
-        lines = len(self.gridstate)
-        cols = len(self.gridstate[0])
-        for l in range(lines):
-            for c in range(cols):
-                if self.gridstate[l][c].symbol == '$' or self.gridstate[l][c].symbol == '*':
-                    boxes.append(self.gridstate[l][c])
-        return boxes
+        # boxes = []
+        # lines = len(self.gridstate)
+        # cols = len(self.gridstate[0])
+        # for l in range(lines):
+        #     for c in range(cols):
+        #         if self.gridstate[l][c].symbol == '$' or self.gridstate[l][c].symbol == '*':
+        #             boxes.append(self.gridstate[l][c])
+        # return boxes
+        return [self.gridstate[l][c] for c in range(len(self.gridstate[0])) for l in range(len(self.gridstate)) if self.gridstate[l][c].symbol in ['$', '*']]
 
     def legal_move(self, box, node):
         a = Astar(self.get_keeper(), self.opposite(box, node))
@@ -112,8 +119,8 @@ class GameStateNode:
                 for c in range(len(self.gridstate[0])):
                     if self.gridstate[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
                         aux.append(self.gridstate[l][c])   
-            ###### ATUALIZAÇÃO DO GRIDSTATE #######
-            childrenlist = [n for n in aux if n.symbol not in ['#', '$', '*'] and self.opposite(box, n).symbol != '#' and self.legal_move(box, n)] 
+            ###### ATUALIZAÇÃO DO GRIDSTATE #######                                                                                                 # and not n.is_deadlock(n.children(), ["#", "$", "*"])
+            childrenlist = [n for n in aux if n.symbol not in ['#', '$', '*'] and self.opposite(box, n).symbol != '#' and self.legal_move(box, n) and not n.is_deadlock(n.children(), ["#", "$", "*"])] 
             for child in childrenlist:
                 new_gamestate = GameStateNode(self.gridstate, (box.position, child.position))
                 result.append(new_gamestate)
@@ -152,7 +159,8 @@ class GameStateNode:
                 node_box.symbol = '+'
 
     def heuristics(self, node):
-        return 0
+        return min([abs(goal.position[0] - box.position[0]) + abs(goal.position[1] - box.position[1]) for box in self.get_boxes() for goal in node.goals])
+        #return 0
 
 class Astar:
     def __init__(self, start, goal):

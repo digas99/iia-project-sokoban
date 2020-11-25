@@ -11,10 +11,15 @@ class Agent:
         self.keys = []
         self.starting_grid = None
         self.final_grid = None
+        self.goals = self.get_goals(grid(mapa))
+
+    def get_goals(self, grid):
+        return [grid[l][c] for c in range(len(grid[0])) for l in range(len(grid)) if grid[l][c].symbol in ['.', '*']]
 
     def new_level(self, mapa):
         self.mapa = mapa
         self.starting_grid = None
+        self.goals = self.get_goals(grid(mapa))
 
     def update(self, state):
         if self.starting_grid == None:
@@ -39,8 +44,8 @@ class Agent:
 
     def decision(self):
         ############ TESTING ######################
-        root = GameStateNode(self.starting_grid)
-        goal = GameStateNode(self.final_grid)
+        root = GameStateNode(self.starting_grid, goals=self.goals)
+        goal = GameStateNode(self.final_grid, goals=self.goals)
         goal.final = True
         #print(root)
         #print(goal)

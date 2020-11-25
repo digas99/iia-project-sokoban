@@ -21,6 +21,8 @@ logger_websockets.setLevel(logging.WARN)
 logger = logging.getLogger("Map")
 logger.setLevel(logging.DEBUG)
 
+MAP_X_INCREASE = 3
+
 KEEPER = {
     "up": (3 * 64, 4 * 64),
     "left": (3 * 64, 6 * 64),
@@ -134,16 +136,25 @@ def scale(pos):
 
 def draw_background(mapa):
     """Create background surface."""
-    background = pygame.Surface(scale(mapa.size))
-    for x in range(mapa.size[0]+2):
-        for y in range(mapa.size[1]):
+    map_x, map_y = mapa.size
+    background = pygame.Surface(scale((map_x+MAP_X_INCREASE, map_y)))
+    #drew_barrier = False
+    for x in range(map_x+MAP_X_INCREASE):
+        for y in range(map_y):
             wx, wy = scale((x, y))
-            if x < mapa.size[0]:
+            if x < map_x:
                 background.blit(SPRITES, (wx, wy), (*PASSAGE, *scale((1, 1))))
                 if mapa.get_tile((x, y)) == Tiles.WALL:
                     background.blit(SPRITES, (wx, wy), (*WALL, *scale((1, 1))))
                 if mapa.get_tile((x, y)) in [Tiles.GOAL, Tiles.BOX_ON_GOAL, Tiles.MAN_ON_GOAL]:
                     background.blit(SPRITES, (wx, wy), (*GOAL, *scale((1, 1))))
+            else:
+                # if not drew_barrier:
+                #     background.blit(SPRITES, (wx,wy), (*GOAL, *scale((1, 1))))
+                #     if y == map_y-1:
+                #         drew_barrier = True
+                #else:
+                background.blit(SPRITES, (wx,wy), (*PASSAGE, *scale((1, 1))))
     return background
 
 
@@ -186,7 +197,7 @@ async def main_loop(queue):
     except (KeyError, FileNotFoundError):
         mapa = Map("levels/1.xsb")  # Fallback to initial map
     map_x, map_y = mapa.size
-    SCREEN = pygame.display.set_mode(scale((map_x+2, map_y)))
+    SCREEN = pygame.display.set_mode(scale((map_x+MAP_X_INCREASE, map_y)))
     SPRITES = pygame.image.load("data/sokoban.png").convert_alpha()
 
     BACKGROUND = draw_background(mapa)
@@ -214,14 +225,42 @@ async def main_loop(queue):
             player = state['player']
             text = f"m, p, s: {state['score']}"
             draw_info(SCREEN, text.zfill(6), (5, 1))
-            text = str(player).rjust(32)
+            text = ("Player: "+str(player)).rjust(32)
             draw_info(SCREEN, text, (4000, 1))
   
+            draw_info(SCREEN, "Best Round:", (4000, 30))
+
             if player != "player1":
                 best_entry = HighScoresFetch(name=state['player']).get_best_entry(type="max", key="score")
-                print("BEST",best_entry)
-                text = "Score: "+str(best_entry['score'])
-                draw_info(SCREEN, text.zfill(6), (50,1))
+                data_index = ["level", "timestamp", "", "score", "total_moves", "total_pushes", "total_steps"]
+                for i, info in enumerate(data_index):
+                    curr_data_index = data_index[i]
+
+                    if curr_data_index == "":
+                        continue
+                    else:
+                        content = best_entry[info]
+
+                    if curr_data_index == "timestamp":
+                        splitted = content.split("T")
+                        draw_info(SCREEN, "Date: "+splitted[0], (4000, 50+i*20))
+                        draw_info(SCREEN, splitted[1], (4000, 50+(i+1)*20))
+                        continue
+
+                    if curr_data_index == "total_moves":
+                        curr_data_index = "moves"
+
+                    if curr_data_index == "total_pushes":
+                        curr_data_index = "pushes"
+
+                    if curr_data_index == "total_steps":
+                        curr_data_index = "steps"                    
+
+                    draw_info(SCREEN, format_string(curr_data_index)+": "+str(content), (4000, 50+i*20))
+                # best_entry = hs.get_best_entry(type="max", key="score")
+                # print("BEST",best_entry)
+                # text = ("Score: "+str(best_entry['score'])).rjust(32)
+                # draw_info(SCREEN, text, (4000,50))
 
         if "level" in state:
             w, _ = draw_info(SCREEN, "level: ", (SCREEN.get_width() / 2, 1))
@@ -304,7 +343,7 @@ async def main_loop(queue):
                     )
                     continue
                 map_x, map_y = mapa.size
-                SCREEN = pygame.display.set_mode(scale((map_x+2, map_y)))
+                SCREEN = pygame.display.set_mode(scale((map_x+MAP_X_INCREASE, map_y)))
                 BACKGROUND = draw_background(mapa)
                 SCREEN.blit(BACKGROUND, (0, 0))
 
@@ -318,6 +357,14 @@ async def main_loop(queue):
             new_event = False
             continue
 
+def format_string(word):
+    final_word = ""
+    for i, c in enumerate(word):
+        if i == 0:
+            final_word+=c.upper()
+        else:
+            final_word+=c
+    return final_word
 
 if __name__ == "__main__":
     SERVER = os.environ.get("SERVER", "localhost")

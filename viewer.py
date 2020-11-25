@@ -310,8 +310,8 @@ async def main_loop(queue):
 
                 info_pos = curr_round_pos + 35
                 for i, curr_info in enumerate(["Moves", "Pushes", "Steps"]):
-                    info_w, _ = draw_info(SCREEN, str(state['score'][i]), (-4000, info_pos+i*20))
-                    draw_info(SCREEN, str(state['score'][i]), (SCREEN.get_width()-info_w-margin_right, info_pos+i*20), (255, 255, 255))
+                    info_w, _ = draw_info(SCREEN, str(state['score'][i+1]), (-4000, info_pos+i*20))
+                    draw_info(SCREEN, str(state['score'][i+1]), (SCREEN.get_width()-info_w-margin_right, info_pos+i*20), (255, 255, 255))
                     title_info_w, _ = draw_info(SCREEN, curr_info+": ", (-4000, info_pos+i*20))
                     draw_info(SCREEN, curr_info+": ", (SCREEN.get_width()-title_fixed_size, info_pos+i*20))
 
@@ -319,8 +319,8 @@ async def main_loop(queue):
             draw_info(
                 SCREEN,
                 f"{state['level']}",
-                (SCREEN.get_width()-165, 350),
-                color=(255, 255, 255), size=100
+                (SCREEN.get_width()-162, 335),
+                color=(255, 255, 255), size=50
             )
 
         if "boxes" in state:

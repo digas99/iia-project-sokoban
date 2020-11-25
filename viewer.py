@@ -166,9 +166,9 @@ def draw_background(mapa):
     return background
 
 
-def draw_info(surface, text, pos, color=(0, 0, 0), background=None):
+def draw_info(surface, text, pos, color=(0, 0, 0), background=None, size=24):
     """Creates text based surfaces for information display."""
-    myfont = pygame.font.Font(None, int(24 / SCALE))
+    myfont = pygame.font.Font(None, int(size / SCALE))
     textsurface = myfont.render(text, True, color, background)
 
     x, y = pos
@@ -229,15 +229,12 @@ async def main_loop(queue):
         main_group.clear(SCREEN, clear_callback)
         boxes_group.clear(SCREEN, clear_callback)
 
+        margin_top = 30
+        margin_right = 30
+        space_between_cols = 5
+        
         if "score" in state and "player" in state:
             player = state['player']
-            text = f"m, p, s: {state['score']}"
-            draw_info(SCREEN, text.zfill(6), (5, 1))
-
-
-            margin_top = 30
-            margin_right = 30
-            space_between_cols = 5
             
             player_h = SCREEN.get_height() - 40
             player_w, _ = draw_info(SCREEN, player, (-4000, player_h))
@@ -245,15 +242,16 @@ async def main_loop(queue):
             player_title_w, _ = draw_info(SCREEN, "Player: ", (-4000, player_h))
             draw_info(SCREEN, "Player: ", (SCREEN.get_width()-player_w-player_title_w-margin_right-space_between_cols, player_h), (255, 255, 255))
 
-            bestround_pos = margin_top
-            bestround_w, _ = draw_info(SCREEN, "Best Round", (-4000, bestround_pos))
-            draw_info(SCREEN, "Best Round", (SCREEN.get_width()-bestround_w-margin_right-22, bestround_pos), (255, 242, 0))
-
             hs = HighScoresFetch(name=player)
             data_index = ["level", "timestamp", "", "score", "total_moves", "total_pushes", "total_steps"]
 
-            info_pos = bestround_pos + 35
             if hs.data != []:
+                bestround_pos = margin_top
+                bestround_w, _ = draw_info(SCREEN, "Best Round", (-4000, bestround_pos))
+                draw_info(SCREEN, "Best Round", (SCREEN.get_width()-bestround_w-margin_right-22, bestround_pos), (255, 242, 0))
+
+                info_pos = bestround_pos + 35
+
                 best_entry = hs.get_best_entry(type="max", key="score")
 
                 splitted = best_entry['timestamp'].split("T")
@@ -293,47 +291,24 @@ async def main_loop(queue):
                     draw_info(SCREEN, str(content), (SCREEN.get_width()-info_w-margin_right, info_pos+i*20), (255, 255, 255))
                     title_info_w, _ = draw_info(SCREEN, format_string(curr_data_index)+": ", (-4000, info_pos+i*20))
                     draw_info(SCREEN, format_string(curr_data_index)+": ", (SCREEN.get_width()-title_fixed_size, info_pos+i*20))
-            else:
-                info_w, _ = draw_info(SCREEN, "None", (-4000, 0))
-                title_info_w, _ = draw_info(SCREEN, "Data: ", (-4000, 0))
-                title_fixed_size = info_w+title_info_w+margin_right+space_between_cols
-                
-                for i, info in enumerate(data_index):
-                    curr_data_index = data_index[i]
 
-                    if curr_data_index == "":
-                        continue
+                curr_round_pos = 230
+                curr_round_w, _ = draw_info(SCREEN, "Current Round", (-4000, curr_round_pos))
+                draw_info(SCREEN, "Current Round", (SCREEN.get_width()-curr_round_w-margin_right-10, curr_round_pos), (255, 0, 0))
 
-                    if curr_data_index == "timestamp":
-                        info_w, _ = draw_info(SCREEN, "None", (-4000, info_pos+i*20))
-                        draw_info(SCREEN, "None", (SCREEN.get_width()-info_w-margin_right, info_pos+i*20), (255, 255, 255))
-                        title_info_w, _ = draw_info(SCREEN, "Data: ", (-4000, info_pos+i*20))
-                        draw_info(SCREEN, "Data: ", (SCREEN.get_width()-title_fixed_size, info_pos+i*20))
-                        info_w, _ = draw_info(SCREEN, "None", (-4000, info_pos+i*20))
-                        draw_info(SCREEN, "None", (SCREEN.get_width()-info_w-margin_right, info_pos+(i+1)*20), (255, 255, 255))
-                        continue
-
-                    if curr_data_index == "total_moves":
-                        curr_data_index = "moves"
-
-                    if curr_data_index == "total_pushes":
-                        curr_data_index = "pushes"
-
-                    if curr_data_index == "total_steps":
-                        curr_data_index = "steps"                    
-
-                    info_w, _ = draw_info(SCREEN, "0", (-4000, info_pos+i*20))
-                    draw_info(SCREEN, "0", (SCREEN.get_width()-info_w-margin_right, info_pos+i*20), (255, 255, 255))
-                    title_info_w, _ = draw_info(SCREEN, format_string(curr_data_index)+": ", (-4000, info_pos+i*20))
-                    draw_info(SCREEN, format_string(curr_data_index)+": ", (SCREEN.get_width()-title_fixed_size, info_pos+i*20))
+                info_pos = curr_round_pos + 35
+                for i, curr_info in enumerate(["Moves", "Pushes", "Steps"]):
+                    info_w, _ = draw_info(SCREEN, str(state['score'][i]), (-4000, info_pos+i*20))
+                    draw_info(SCREEN, str(state['score'][i]), (SCREEN.get_width()-info_w-margin_right, info_pos+i*20), (255, 255, 255))
+                    title_info_w, _ = draw_info(SCREEN, curr_info+": ", (-4000, info_pos+i*20))
+                    draw_info(SCREEN, curr_info+": ", (SCREEN.get_width()-title_fixed_size, info_pos+i*20))
 
         if "level" in state:
-            w, _ = draw_info(SCREEN, "level: ", (SCREEN.get_width() / 2, 1))
             draw_info(
                 SCREEN,
                 f"{state['level']}",
-                (SCREEN.get_width() / 2 + w, 1),
-                color=(200, 20, 20),
+                (SCREEN.get_width()-165, 350),
+                color=(255, 255, 255), size=100
             )
 
         if "boxes" in state:

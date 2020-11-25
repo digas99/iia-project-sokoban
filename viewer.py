@@ -21,7 +21,7 @@ logger_websockets.setLevel(logging.WARN)
 logger = logging.getLogger("Map")
 logger.setLevel(logging.DEBUG)
 
-MAP_X_INCREASE = 3
+MAP_X_INCREASE = 4
 
 KEEPER = {
     "up": (3 * 64, 4 * 64),
@@ -34,6 +34,9 @@ BOX_ON_GOAL = (9 * 64, 0)
 GOAL = (12 * 64, 5 * 64)
 WALL = (8 * 64, 6 * 64)
 PASSAGE = (12 * 64, 6 * 64)
+GREEN_PASSAGE = (10 * 64, 6 * 64)
+GRAY_PASSAGE = (11 * 64, 6 * 64)
+BLACK_SURFACE = (11 * 64, 0)
 
 CHAR_LENGTH = 64
 CHAR_SIZE = CHAR_LENGTH, CHAR_LENGTH
@@ -138,8 +141,10 @@ def draw_background(mapa):
     """Create background surface."""
     map_x, map_y = mapa.size
     background = pygame.Surface(scale((map_x+MAP_X_INCREASE, map_y)))
-    #drew_barrier = False
+    separator = True
     for x in range(map_x+MAP_X_INCREASE):
+        if x == map_x+1:
+            separator = False
         for y in range(map_y):
             wx, wy = scale((x, y))
             if x < map_x:
@@ -148,13 +153,13 @@ def draw_background(mapa):
                     background.blit(SPRITES, (wx, wy), (*WALL, *scale((1, 1))))
                 if mapa.get_tile((x, y)) in [Tiles.GOAL, Tiles.BOX_ON_GOAL, Tiles.MAN_ON_GOAL]:
                     background.blit(SPRITES, (wx, wy), (*GOAL, *scale((1, 1))))
-            else:
-                # if not drew_barrier:
-                #     background.blit(SPRITES, (wx,wy), (*GOAL, *scale((1, 1))))
-                #     if y == map_y-1:
-                #         drew_barrier = True
-                #else:
-                background.blit(SPRITES, (wx,wy), (*PASSAGE, *scale((1, 1))))
+            else:  
+                if y == 0:
+                    background.blit(SPRITES, (wx,wy), (*GRAY_PASSAGE, *scale((1, 1))))
+                elif separator:
+                    background.blit(SPRITES, (wx,wy), (*BLACK_SURFACE, *scale((1, 1))))  
+                else:
+                    background.blit(SPRITES, (wx,wy), (*GREEN_PASSAGE, *scale((1, 1))))
     return background
 
 
@@ -225,14 +230,32 @@ async def main_loop(queue):
             player = state['player']
             text = f"m, p, s: {state['score']}"
             draw_info(SCREEN, text.zfill(6), (5, 1))
-            text = ("Player: "+str(player)).rjust(32)
-            draw_info(SCREEN, text, (4000, 1))
-  
-            draw_info(SCREEN, "Best Round:", (4000, 30))
 
-            if player != "player1":
-                best_entry = HighScoresFetch(name=state['player']).get_best_entry(type="max", key="score")
-                data_index = ["level", "timestamp", "", "score", "total_moves", "total_pushes", "total_steps"]
+            margin = 30
+            space_between_cols = 5
+            
+            player_pos = 25
+            player_w, _ = draw_info(SCREEN, player, (-4000, player_pos))
+            draw_info(SCREEN, player, (SCREEN.get_width()-player_w-margin, player_pos), (252, 66, 66))
+            player_title_w, _ = draw_info(SCREEN, "Player: ", (-4000, player_pos))
+            draw_info(SCREEN, "Player: ", (SCREEN.get_width()-player_w-player_title_w-margin-space_between_cols, player_pos), (255, 255, 255))
+
+            bestround_pos = player_pos+50
+            bestround_w, _ = draw_info(SCREEN, "Best Round", (-4000, bestround_pos))
+            draw_info(SCREEN, "Best Round", (SCREEN.get_width()-bestround_w-margin-22, bestround_pos), (255, 242, 0))
+
+            hs = HighScoresFetch(name=player)
+            data_index = ["level", "timestamp", "", "score", "total_moves", "total_pushes", "total_steps"]
+
+            info_pos = bestround_pos + 35
+            if hs.data != []:
+                best_entry = hs.get_best_entry(type="max", key="score")
+
+                splitted = best_entry['timestamp'].split("T")
+                info_w, _ = draw_info(SCREEN, splitted[0], (-4000, 0))
+                title_info_w, _ = draw_info(SCREEN, "Data: ", (-4000, 0))
+                title_fixed_size = info_w+title_info_w+margin+space_between_cols
+                
                 for i, info in enumerate(data_index):
                     curr_data_index = data_index[i]
 
@@ -243,8 +266,13 @@ async def main_loop(queue):
 
                     if curr_data_index == "timestamp":
                         splitted = content.split("T")
-                        draw_info(SCREEN, "Date: "+splitted[0], (4000, 50+i*20))
-                        draw_info(SCREEN, splitted[1], (4000, 50+(i+1)*20))
+                        
+                        info_w, _ = draw_info(SCREEN, splitted[0], (-4000, info_pos+i*20))
+                        draw_info(SCREEN, splitted[0], (SCREEN.get_width()-info_w-margin, info_pos+i*20), (255, 255, 255))
+                        title_info_w, _ = draw_info(SCREEN, "Data: ", (-4000, info_pos+i*20))
+                        draw_info(SCREEN, "Data: ", (SCREEN.get_width()-title_fixed_size, info_pos+i*20))
+                        info_w, _ = draw_info(SCREEN, splitted[1], (-4000, info_pos+i*20))
+                        draw_info(SCREEN, splitted[1], (SCREEN.get_width()-info_w-margin, info_pos+(i+1)*20), (255, 255, 255))
                         continue
 
                     if curr_data_index == "total_moves":
@@ -256,11 +284,43 @@ async def main_loop(queue):
                     if curr_data_index == "total_steps":
                         curr_data_index = "steps"                    
 
-                    draw_info(SCREEN, format_string(curr_data_index)+": "+str(content), (4000, 50+i*20))
-                # best_entry = hs.get_best_entry(type="max", key="score")
-                # print("BEST",best_entry)
-                # text = ("Score: "+str(best_entry['score'])).rjust(32)
-                # draw_info(SCREEN, text, (4000,50))
+                    info_w, _ = draw_info(SCREEN, str(content), (-4000, info_pos+i*20))
+                    draw_info(SCREEN, str(content), (SCREEN.get_width()-info_w-margin, info_pos+i*20), (255, 255, 255))
+                    title_info_w, _ = draw_info(SCREEN, format_string(curr_data_index)+": ", (-4000, info_pos+i*20))
+                    draw_info(SCREEN, format_string(curr_data_index)+": ", (SCREEN.get_width()-title_fixed_size, info_pos+i*20))
+            else:
+                info_w, _ = draw_info(SCREEN, "None", (-4000, 0))
+                title_info_w, _ = draw_info(SCREEN, "Data: ", (-4000, 0))
+                title_fixed_size = info_w+title_info_w+margin+space_between_cols
+                
+                for i, info in enumerate(data_index):
+                    curr_data_index = data_index[i]
+
+                    if curr_data_index == "":
+                        continue
+
+                    if curr_data_index == "timestamp":
+                        info_w, _ = draw_info(SCREEN, "None", (-4000, info_pos+i*20))
+                        draw_info(SCREEN, "None", (SCREEN.get_width()-info_w-margin, info_pos+i*20), (255, 255, 255))
+                        title_info_w, _ = draw_info(SCREEN, "Data: ", (-4000, info_pos+i*20))
+                        draw_info(SCREEN, "Data: ", (SCREEN.get_width()-title_fixed_size, info_pos+i*20))
+                        info_w, _ = draw_info(SCREEN, "None", (-4000, info_pos+i*20))
+                        draw_info(SCREEN, "None", (SCREEN.get_width()-info_w-margin, info_pos+(i+1)*20), (255, 255, 255))
+                        continue
+
+                    if curr_data_index == "total_moves":
+                        curr_data_index = "moves"
+
+                    if curr_data_index == "total_pushes":
+                        curr_data_index = "pushes"
+
+                    if curr_data_index == "total_steps":
+                        curr_data_index = "steps"                    
+
+                    info_w, _ = draw_info(SCREEN, "0", (-4000, info_pos+i*20))
+                    draw_info(SCREEN, "0", (SCREEN.get_width()-info_w-margin, info_pos+i*20), (255, 255, 255))
+                    title_info_w, _ = draw_info(SCREEN, format_string(curr_data_index)+": ", (-4000, info_pos+i*20))
+                    draw_info(SCREEN, format_string(curr_data_index)+": ", (SCREEN.get_width()-title_fixed_size, info_pos+i*20))
 
         if "level" in state:
             w, _ = draw_info(SCREEN, "level: ", (SCREEN.get_width() / 2, 1))

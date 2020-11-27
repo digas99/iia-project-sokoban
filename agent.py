@@ -64,10 +64,7 @@ class Agent:
             PathFindingNode.grid = childstate.gridstate
             astar_keeper = Astar(keeper, finish)
             aux = astar_keeper.search() 
-            if aux == None:
-                aux = []
-            path = path + [node.position for node in aux] + [box.position] 
-        # print([node.position for node in path])
+            path += [node.position for node in aux] + [box.position] if aux != None else ([keeper.position] if path == [] else [box.position])
         return path
 
     def final_state(self):
@@ -76,7 +73,7 @@ class Agent:
         cols = len(finalstate[0])
         for l in range(lines):
             for c in range(cols):
-                if finalstate[l][c].symbol == '.':
+                if finalstate[l][c].symbol == '.' or finalstate[l][c].symbol == '+':
                     finalstate[l][c].symbol = '*'
                 if finalstate[l][c].symbol == '$':
                     finalstate[l][c].symbol = '-'

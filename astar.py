@@ -14,23 +14,13 @@ class PathFindingNode:
         self.h = 0
     
     def __eq__(self, other):
-        if self.position == other.position and self.symbol == other.symbol:
-            return True
-        else:
-            return False
+        return self.position == other.position and self.symbol == other.symbol
 
     def __hash__(self):
-        return hash((self.position, self.symbol))
+        return hash(str(self))
 
     def __str__(self):
-        string = ""
-        lines = len(grid)
-        cols = len(grid[0])
-        for l in range(lines):
-            for c in range(cols):
-                string += grid[l][c].symbol
-            string += "\n"
-        return string
+        return str((self.position, self.symbol))
 
     def is_deadlock(self, adjacents, unwanted_symbols):
         return DeadlockAgent(self.position, adjacents, unwanted_symbols).check_all_deadlocks() if self.symbol != "#" and adjacents != None else False
@@ -63,19 +53,18 @@ class GameStateNode:
     def __eq__(self, other):
         if self.final or other.final:
             return self.boxes == other.get_boxes()
-        return self.movement == other.movement and self.gridstate == other.gridstate
-    
+        return self.movement == other.movement and self.gridstate == other.gridstate   
+
     def __hash__(self):
-        return hash((self.movement, str(self.gridstate)))
+        return hash(str(self))
 
     def __str__(self):
         string = ""
-        lines = len(self.gridstate)
-        cols = len(self.gridstate[0])
-        for l in range(lines):
-            for c in range(cols):
-                string += self.gridstate[l][c].symbol
+        for line in self.gridstate:
+            for node in line:
+                string += node.symbol
             string += "\n"
+        
         return string
 
     def opposite(self, box, node):
@@ -190,6 +179,25 @@ class Astar:
                     path.append(curr_node)
                     curr_node = curr_node.previous
                 path.append(self.start)
+
+                ########### DEBUG #########################
+                if isinstance(curr_node, GameStateNode):
+                    print("Solution!!!")
+                    for p in path[::-1]:
+                        print("")
+                        print(p)
+
+                    print("Openset -------------")
+                    for node in openset:
+                        print("")
+                        print(node)
+
+                    print("Closedset ++++++++++++")
+                    for node in closedset:
+                        print("")
+                        print(node)
+
+
                 return path[::-1]
         
             #if node is not goal box

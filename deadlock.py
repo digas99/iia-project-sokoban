@@ -1,7 +1,6 @@
 class DeadlockAgent:
-	def __init__(self, position, box_symbol, adjacents, unwanted_symbols, gamestate):
+	def __init__(self, position, adjacents, unwanted_symbols, gamestate):
 		self.position = position
-		self.box_symbol = box_symbol
 		self.adjacents = adjacents
 		self.unwanted_symbols = unwanted_symbols
 		self.obstacles = [adjacent for adjacent in adjacents if adjacent.symbol in unwanted_symbols]

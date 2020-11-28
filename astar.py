@@ -22,8 +22,8 @@ class PathFindingNode:
     def __str__(self):
         return str((self.position, self.symbol))
 
-    def is_deadlock(self, box_symbol, adjacents, unwanted_symbols, gamestate):
-        return DeadlockAgent(self.position, box_symbol, adjacents, unwanted_symbols, gamestate).check_all_deadlocks() if self.symbol not in ["#", ".", "*", "+"] and adjacents != None else False
+    def is_deadlock(self, adjacents, unwanted_symbols, gamestate):
+        return DeadlockAgent(self.position, adjacents, unwanted_symbols, gamestate).check_all_deadlocks() if self.symbol not in ["#", ".", "*", "+"] and adjacents != None else False
 
     def children(self, all_children=False):
         x,y = self.position
@@ -92,7 +92,7 @@ class GameStateNode:
         return [self.gridstate[l][c] for c in range(len(self.gridstate[0])) for l in range(len(self.gridstate)) if self.gridstate[l][c].symbol in ['$', '*']]
 
     def legal_move(self, box, node):
-        a = Astar(self.keeper, self.opposite(box, node))
+        a = Astar(self.keeper, self.opposite(box, node), "greedy")
         if a.search() == None:
             return False
         else:
@@ -112,7 +112,7 @@ class GameStateNode:
                     if self.gridstate[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
                         aux.append(self.gridstate[l][c])   
             ###### ATUALIZAÇÃO DO GRIDSTATE #######                                                                                 
-            childrenlist = [n for n in aux if n.symbol not in ['#', '$', '*'] and self.opposite(box, n).symbol != '#' and self.legal_move(box, n) and not n.is_deadlock(box.symbol, n.children(True), ['#'], self)]
+            childrenlist = [n for n in aux if n.symbol not in ['#', '$', '*'] and self.opposite(box, n).symbol not in ['#','$',"*"] and self.legal_move(box, n) and not n.is_deadlock(n.children(True), ['#'], self)]
             for child in childrenlist:
                 new_gamestate = GameStateNode(self.gridstate, (box.position, child.position))
                 result.append(new_gamestate)
@@ -155,9 +155,10 @@ class GameStateNode:
         #return 0
 
 class Astar:
-    def __init__(self, start, goal):
+    def __init__(self, start, goal, strategy="uniform"):
         self.start = start 
         self.goal = goal
+        self.strategy = strategy
 
     # A* algorithm
     def search(self):
@@ -173,7 +174,13 @@ class Astar:
 
         while openset:
             #finds the node with the lowest f function
-            curr_node = min(openset, key=lambda n: n.g + n.h)
+            if self.strategy == "uniform":
+                k = lambda n: n.g
+            elif self.strategy == "greedy":
+                k = lambda n: n.h
+            elif self.strategy == "a*":
+                k = lambda n: n.g+n.h
+            curr_node = min(openset, key=k)
 
             #if node is goal box
             if curr_node == self.goal:

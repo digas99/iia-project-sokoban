@@ -1,11 +1,12 @@
 class DeadlockAgent:
-	def __init__(self, position, adjacents, unwanted_symbols, gamestate):
+	def __init__(self, position, box_symbol, adjacents, unwanted_symbols, gamestate):
 		self.position = position
+		self.box_symbol = box_symbol
 		self.adjacents = adjacents
 		self.unwanted_symbols = unwanted_symbols
 		self.obstacles = [adjacent for adjacent in adjacents if adjacent.symbol in unwanted_symbols]
 		self.gamestate = gamestate
-
+		
 	def set_unwanted_symbols(self, unwanted_symbols):
 		self.unwanted_symbols = unwanted_symbols
 		self.obstacles = [adjacent for adjacent in self.adjacents if adjacent.symbol in unwanted_symbols]
@@ -29,46 +30,97 @@ class DeadlockAgent:
 		return any([all(square in [obstacle.position for obstacle in self.obstacles] for square in pair) for pair in pairs])
 	
 	def deadlock_next_to_walls_no_goal_in_path(self):
+		#print("")
 		x, y = self.position
+		#print("MAIN POS: ", self.position)
+		#print("BOX SEARCH SYMBOL: ", self.box_symbol)
 		#print("goals", self.gamestate.goals)
 
 		# not deadlock if goal in path
-		if any([goal.position[0] == x or goal.position[1] == y for goal in self.gamestate.goals]):
-			return False
+		# if any([goal.position[0] == x or goal.position[1] == y for goal in self.gamestate.goals]):
+		# 	return False
 
 		mapa = self.gamestate.gridstate
 		map_limits = len(mapa)-1, len(mapa[0])-1
 		checks = []
 		# print("POS: ", self.position)
 		# print("obstacles: ", [o.position for o in self.obstacles])
-		for obstacle in self.obstacles:
-			xo, yo = obstacle.position
-			direction = "vertical" if yo != y else "horizontal"
-			# print(direction)
-			checks.append(sides_are_walls(obstacle.position, map_limits, [child for child in obstacle.children(True) if child.symbol == "#"], direction))
+		#[print(a.position, a.symbol) for a in self.adjacents]
+		for adjacent in self.adjacents:
+			if adjacent.symbol == "#":
+				xo, yo = adjacent.position
+				direction = "vertical" if yo != y else "horizontal"
+				
+				#print(direction)
+
+				if direction == "horizontal":
+					if any([goal.position[0] == x for goal in self.gamestate.goals]):
+						return False
+				else:
+					if any([goal.position[1] == y for goal in self.gamestate.goals]):
+						return False
+
+				checks.append(sides_are_walls(self, adjacent, map_limits, adjacent.children(True), direction))
 		
 		#print(checks)
 		return any(checks)
 
-def sides_are_walls(pos, map_limits, obstacles, direction):
+def sides_are_walls(parent, current, map_limits, adjacents, direction):
+	#print("")	
+	x, y = current.position
+	#print("CURRENT:", current.position)
+	#print(direction)
+	#[print(a.position, a.symbol) for a in adjacents]
+	# index 0 of tuple is the direction to go if curr is wall, index 1 is if curr is not wall
+	sides = [(x-1,y), (x+1,y)] if direction == "vertical" else [(x,y-1), (x,y+1)]
+
+	#print("SIDES 0", sides)
+	sides_nodes = [adjacent for adjacent in adjacents if adjacent.position in sides] 
+
+	return all([side_is_wall(current, side, map_limits, side.children(True), direction) for side in sides_nodes])
+
+def side_is_wall(parent, current, map_limits, adjacents, direction):
+	#print("")
 	rows_lim, cols_lim = map_limits
 	frame_direction = "vertical" if direction == "horizontal" else "horizontal"
-	if in_frame(rows_lim, cols_lim, pos, frame_direction):
+	if in_frame(rows_lim, cols_lim, current.position, frame_direction):
 		#print("in frame")
 		return True
+	
+	x, y = current.position
+	#print("CURRENT:", current.position)
+	#print(direction)
+	#[print(a.position, a.symbol) for a in adjacents]
+	# index 0 of tuple is the direction to go if curr is wall, index 1 is if curr is not wall
+	sides = ([(x-1,y), (x+1,y)], [(x,y-1), (x,y+1)]) if direction == "vertical" else ([(x,y-1), (x,y+1)], [(x-1,y) , (x+1,y)])
 
-	x, y = pos
-	sides = [x-1, x+1] 	if direction == "horizontal" else [y-1, y+1]
+	if current.symbol != "#":
+		if parent.symbol != "#":
+			return False
 
-	sides_obstacles = [obstacle for obstacle in obstacles if obstacle.position in sides]
+		#print("SIDES 1: ",sides[1])
+		obstacles = [adjacent.position for adjacent in adjacents if adjacent.symbol == "#"]
+		if all([side not in obstacles for side in sides[1]]):
+			return False
 
-	# if both sides are obstacles
-	if len(sides_obstacles) == 2:
-		return all([sides_are_walls(obstacle.pos, map_limits, [child for child in obstacle.children(True) if child.symbol == "#"], direction) for obstacle in sides_obstacles])
+	#print("SIDES 0", sides[0])
+	# choose side oposite to parent
+	side = [side for side in sides[0] if side != parent.position][0]
+	# get node
+	adjacent = [adjacent for adjacent in adjacents if adjacent.position == side][0]
 
-	return False
+	return side_is_wall(current, adjacent, map_limits, adjacent.children(True), direction)
+	
+	# sides_obstacles = [obstacle for obstacle in obstacles if obstacle.position in sides]
+
+	# # if both sides are obstacles
+	# if len(sides_obstacles) == 2:
+	# 	return all([sides_are_walls(obstacle.pos, map_limits, [child for child in obstacle.children(True) if child.symbol == "#"], direction) for obstacle in sides_obstacles])
+
+	# return False
 	
 def in_frame(rows_lim, cols_lim, pos, frame_direction):
 	x, y = pos
-	checks = [x==0, x==rows_lim] if frame_direction == "vertical" else [y==0, y==cols_lim]
+	#print("CHECK IF INFRAME: ",pos)
+	checks = [y==0, y==cols_lim] if frame_direction == "vertical" else [x==0, x==rows_lim]
 	return any(checks)

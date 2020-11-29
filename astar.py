@@ -183,22 +183,22 @@ class Astar:
                     curr_node = curr_node.previous
                 path.append(self.start)
 
-                ########### DEBUG #########################
-                # if isinstance(curr_node, GameStateNode):
-                #     print("Solution!!!")
-                #     for p in path[::-1]:
-                #         print("")
-                #         print(p)
+                ########## DEBUG #########################
+                if isinstance(curr_node, GameStateNode):
+                    print("Solution!!!")
+                    for p in path[::-1]:
+                        print("")
+                        print(p)
 
-                #     print("Openset -------------")
-                #     for node in openset:
-                #         print("")
-                #         print(node)
+                    print("Openset -------------")
+                    for node in openset:
+                        print("")
+                        print(node)
 
-                #     print("Closedset ++++++++++++")
-                #     for node in closedset:
-                #         print("")
-                #         print(node)
+                    print("Closedset ++++++++++++")
+                    for node in closedset:
+                        print("")
+                        print(node)
 
 
                 return path[::-1]

@@ -151,11 +151,10 @@ class GameStateNode:
                 node_box.symbol = '+'
 
     def heuristics(self, node):
-        return min([abs(goal.position[0] - box.position[0]) + abs(goal.position[1] - box.position[1]) for box in self.boxes for goal in self.goals])
-        #return 0
+        return min([abs(goal.position[0] - box.position[0]) + abs(goal.position[1] - box.position[1]) for box in self.boxes for goal in self.goals]) + min([abs(self.keeper.position[0] - box.position[0]) + abs(self.keeper.position[1] - box.position[1]) for box in self.boxes])
 
 class Astar:
-    def __init__(self, start, goal, strategy="greedy"):
+    def __init__(self, start, goal, strategy):
         self.start = start 
         self.goal = goal
         self.strategy = strategy
@@ -216,7 +215,7 @@ class Astar:
             closedset.add(curr_node)
 
             children_list = curr_node.children()
-    
+            
             for n in children_list:
                 #if its already seen, skip it
                 if n in closedset:

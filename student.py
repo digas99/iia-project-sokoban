@@ -2,47 +2,56 @@ import asyncio
 import getpass
 import json
 import os
-import websockets 
+import random
+
+import websockets
+from mapa import Map
 from agent import *
 
-async def agent_loop(server_address="localhost:8000", agent_name="student"):
+async def solver(puzzle, solution):
+    while True:
+        game_properties = await puzzle.get()
+        mapa = Map(game_properties["map"])
+        print(mapa)
+        agent = Agent(mapa)
+
+        while True:
+            await asyncio.sleep(0.1)  # this should be 0 in your code and this is REQUIRED
+            break
+
+        keys = agent.key()
+        await solution.put(keys)
+
+async def agent_loop(puzzle, solution, server_address="localhost:8000", agent_name="student"):
     async with websockets.connect(f"ws://{server_address}/player") as websocket:
 
         # Receive information about static game properties
         await websocket.send(json.dumps({"cmd": "join", "name": agent_name}))
-        msg = await websocket.recv()
-        game_properties = json.loads(msg)
 
-        # You can create your own map representation or use the game representation:
-        mapa = Map(game_properties["map"])
-        print(mapa)
-
-        # sync with server
-        key = "" 
-        pos = None
-
-        agent = Agent(mapa)
         while True:
             try:
-                state = json.loads(
+                update = json.loads(
                     await websocket.recv()
-                )  # receive game state, this must be called timely or your game will get out of sync with the server
-                if "map" in state:
-                    # we got a new level
-                    agent.new_level(Map(state["map"]))
-                    key = ""
-                    pos = None
-                    # sync with server
-                else:
-                    y, x = state['keeper']
-                    if pos == None or pos == (x,y):
-                        agent.update(state)
-                        key, pos = agent.key()
+                )  # receive game update, this must be called timely or your game will get out of sync with the server
 
-                #print(Map(f"levels/{state['level']}.xsb"))
+                if "map" in update:
+                    # we got a new level
+                    game_properties = update
+                    keys = ""
+                    await puzzle.put(game_properties)
+
+                if not solution.empty():
+                    keys = await solution.get()
+
+                key = ""
+                if len(keys):  # we got a solution!
+                    key = keys[0]
+                    keys = keys[1:]
+
                 await websocket.send(
                     json.dumps({"cmd": "key", "key": key})
-                )  # send key command to server - you must implement this send in the AI agent
+                )
+
             except websockets.exceptions.ConnectionClosedOK:
                 print("Server has cleanly disconnected us")
                 return
@@ -53,5 +62,13 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
 loop = asyncio.get_event_loop()
 SERVER = os.environ.get("SERVER", "localhost")
 PORT = os.environ.get("PORT", "8000")
-NAME = os.environ.get("NAME", "katyusha") #getpass.getuser()
-loop.run_until_complete(agent_loop(f"{SERVER}:{PORT}", NAME))
+NAME = os.environ.get("NAME", getpass.getuser())
+
+puzzle = asyncio.Queue(loop=loop)
+solution = asyncio.Queue(loop=loop)
+
+net_task = loop.create_task(agent_loop(puzzle, solution, f"{SERVER}:{PORT}", NAME))
+solver_task = loop.create_task(solver(puzzle, solution))
+
+loop.run_until_complete(asyncio.gather(net_task, solver_task))
+loop.close()

@@ -1,4 +1,3 @@
-from mapa import Map
 from astar import *
 from copy import deepcopy
 
@@ -8,34 +7,24 @@ class Agent:
         # boxes = state['boxes']
         # print(boxes)
         self.mapa = mapa
-        self.keys = []
-        self.starting_grid = None
-        self.final_grid = None
-
-    def new_level(self, mapa):
-        self.mapa = mapa
-        self.starting_grid = None
-
-    def update(self, state):
-        if self.starting_grid == None:
-            self.starting_grid = grid(self.mapa)
-            self.final_grid = self.final_state()
+        self.starting_grid = grid(self.mapa)
+        self.final_grid = self.final_state()
+        self.path = self.decision()
 
     def key(self):
-        if self.keys == []:
-            path = self.decision()
-            for i in range(len(path)-1):
-                y, x = path[i]
-                y_next, x_next = path[i+1]
-                if (x - x_next, y - y_next) == (1,0):
-                    self.keys.insert(0, ('a', path[i+1]))
-                elif (x - x_next, y - y_next) == (0,1):
-                    self.keys.insert(0, ('w', path[i+1]))
-                elif (x - x_next, y - y_next) == (-1,0):
-                    self.keys.insert(0, ('d', path[i+1]))
-                elif (x - x_next, y - y_next) == (0,-1):
-                    self.keys.insert(0, ('s', path[i+1]))
-        return self.keys.pop()
+        keys = ""
+        for i in range(len(self.path)-1):
+            y, x = self.path[i]
+            y_next, x_next = self.path[i+1]
+            if (x - x_next, y - y_next) == (1,0):
+                keys += 'a'
+            elif (x - x_next, y - y_next) == (0,1):
+                keys += 'w' 
+            elif (x - x_next, y - y_next) == (-1,0):
+                keys += 'd'
+            elif (x - x_next, y - y_next) == (0,-1):
+                keys += 's'
+        return keys
 
     def decision(self):
         ############ TESTING ######################
@@ -44,8 +33,8 @@ class Agent:
         goal.final = True
         #print(root)
         #print(goal)
-        astar_boxes = Astar(root, goal, "greedy")
-        tree_state = astar_boxes.search()
+        astar_boxes = Astar(root, goal, "greedy")       
+        tree_state = astar_boxes.search() 
         path = self.keeper_path(tree_state)
         return path
 

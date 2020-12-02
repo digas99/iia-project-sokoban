@@ -86,13 +86,13 @@ class GameStateNode:
                     return self.gridstate[l][c]
 
     def get_goals(self):
-        return [self.gridstate[l][c] for c in range(len(self.gridstate[0])) for l in range(len(self.gridstate)) if self.gridstate[l][c].symbol in ['.', '*']]
+        return [self.gridstate[l][c] for c in range(len(self.gridstate[0])) for l in range(len(self.gridstate)) if self.gridstate[l][c].symbol in ['.', '*', '+']]
     
     def get_boxes(self):
         return [self.gridstate[l][c] for c in range(len(self.gridstate[0])) for l in range(len(self.gridstate)) if self.gridstate[l][c].symbol in ['$', '*']]
 
     def legal_move(self, box, node):
-        a = Astar(self.keeper, self.opposite(box, node), "greedy")
+        a = Tree_search(self.keeper, self.opposite(box, node), "greedy")
         if a.search() == None:
             return False
         else:
@@ -153,7 +153,7 @@ class GameStateNode:
     def heuristics(self, node):
         return min([abs(goal.position[0] - box.position[0]) + abs(goal.position[1] - box.position[1]) for box in self.boxes for goal in self.goals]) + min([abs(self.keeper.position[0] - box.position[0]) + abs(self.keeper.position[1] - box.position[1]) for box in self.boxes])
 
-class Astar:
+class Tree_search:
     def __init__(self, start, goal, strategy):
         self.start = start 
         self.goal = goal

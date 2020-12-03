@@ -25,40 +25,7 @@ class PathFindingNode:
     def is_deadlock(self, adjacents, unwanted_symbols, gamestate):
         return DeadlockAgent(self.position, adjacents, unwanted_symbols, gamestate).check_all_deadlocks() if self.symbol not in ["#", ".", "*", "+"] and adjacents != None else False
 
-    ############ DEADLOCK DETECTION #######################
-    # def clean_children(self):
-    #     x,y = self.position
-    #     childrenlist = []
-    #     for l in range(len(self.grid)):
-    #         for c in range(len(self.grid[0])):
-    #             if self.grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
-    #                 childrenlist.append(self.grid[l][c])
-        
-    #     return childrenlist
 
-
-    # def is_corner(self):
-    #     if self.symbol in ['@', '-']:
-    #         x, y = self.position 
-    #         c = self.clean_children()
-    #         walls = []
-    #         for child in c:
-    #             if child.symbol == '#':
-    #                 walls.append(child)
-    #         pairs = [[(x+1, y), (x, y+1)], [(x-1, y), (x, y-1)], [(x+1, y), (x, y-1)], [(x+1, y), (x, y-1)]]
-    #         return any([all(square in [wall.position for wall in walls] for square in pair) for pair in pairs])
-    #     return False
-    #######################################################
-
-    # def children(self):
-    #     x,y = self.position
-    #     childrenlist = []
-    #     for l in range(len(self.grid)):
-    #         for c in range(len(self.grid[0])):
-    #             if self.grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
-    #                 childrenlist.append(self.grid[l][c])
-        
-    #     return [n for n in childrenlist if n.symbol in ['-', '@', '.', '+']]
     def children(self, all_children=False):
         x,y = self.position
         if not all_children:

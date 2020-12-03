@@ -1,4 +1,4 @@
-from astar import *
+from tree_search import *
 from copy import deepcopy
 
 class Agent:

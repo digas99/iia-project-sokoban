@@ -53,7 +53,7 @@ class Agent:
             PathFindingNode.grid = childstate.gridstate
             tree_keeper = Tree_search(keeper, finish, "greedy")
             aux = tree_keeper.search() 
-            path += [node.position for node in aux] + [box.position] if aux != None else ([keeper.position] if path == [] else [box.position])
+            path += [node.position for node in aux] + [box.position] if aux != None else [keeper.position] + [box.position]
         return path
 
     def final_state(self):

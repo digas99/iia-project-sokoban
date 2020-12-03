@@ -58,7 +58,7 @@ class GameStateNode:
     def __eq__(self, other):
         if self.final or other.final:
             return self.boxes == other.get_boxes()
-        return self.movement == other.movement and self.gridstate == other.gridstate   
+        return self.movement == other.movement and self.boxes == other.boxes 
 
     def __hash__(self):
         return hash(str(self))

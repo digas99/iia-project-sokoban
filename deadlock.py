@@ -50,11 +50,11 @@ class DeadlockAgent:
 
 			# check if the children on both sides of the obstacle are also walls
 			# put true or false in the array checks
-			checks.append(sides_are_walls(self, obstacle, map_limits, obstacle.children(True), direction))
+			checks.append(sides_are_walls(self, obstacle, mapa, obstacle.children(True), direction))
 		# if there is atleast one obstacle that has sides_are_walls as true, then it is deadlock
 		return any(checks)
 
-def sides_are_walls(parent, current, map_limits, adjacents, direction):
+def sides_are_walls(parent, current, mapa, adjacents, direction):
 	x, y = current.position
 	# choose which sides to check, depending on the direction of the deadlock
 	sides = [(x-1,y), (x+1,y)] if direction == "vertical" else [(x,y-1), (x,y+1)]
@@ -62,17 +62,11 @@ def sides_are_walls(parent, current, map_limits, adjacents, direction):
 	sides_nodes = [adjacent for adjacent in adjacents if adjacent.position in sides] 
 	# go check with a recursive function if the rest of the squares until frame are walls (do this for both sides)
 	# if it is true for both sides, then it is deadlock
-	return all([side_is_wall(current, side, map_limits, side.children(True), direction) for side in sides_nodes])
+	return all([side_is_wall(parent, current, side, mapa, side.children(True), direction) for side in sides_nodes])
 
-def side_is_wall(parent, current, map_limits, adjacents, direction):
-	rows_lim, cols_lim = map_limits
-	# understand which frame has to be checked, depending on the direction of the deadlock
-	frame_direction = "vertical" if direction == "horizontal" else "horizontal"
-	# if it is in frame then it is deadlock
-	if in_frame(rows_lim, cols_lim, current.position, frame_direction):
-		return True
-	
+def side_is_wall(origin, parent, current, mapa, adjacents, direction):
 	x, y = current.position
+	
 	# index 0 of tuple is the direction to go if curr is wall, index 1 is if curr is not wall
 	sides = ([(x-1,y), (x+1,y)], [(x,y-1), (x,y+1)]) if direction == "vertical" else ([(x,y-1), (x,y+1)], [(x-1,y) , (x+1,y)])
 
@@ -89,14 +83,22 @@ def side_is_wall(parent, current, map_limits, adjacents, direction):
 		if all([side not in obstacles for side in sides[1]]):
 			return False
 
+	ox, oy = origin.position
+	if direction == "horizontal":
+			possible_blockage = ox, y
+	else:
+		possible_blockage = x, oy
+
+	if mapa[possible_blockage[0]][possible_blockage[1]].symbol == "#":
+		return True
+
 	# choose side oposite to parent
 	side = [side for side in sides[0] if side != parent.position][0]
 	# get node
-	adjacent = [adjacent for adjacent in adjacents if adjacent.position == side][0]
-	return side_is_wall(current, adjacent, map_limits, adjacent.children(True), direction)
+	side_node = mapa[side[0]][side[1]]
+	return side_is_wall(origin, current, side_node, mapa, side_node.children(True), direction)
 	
 def in_frame(rows_lim, cols_lim, pos, frame_direction):
 	x, y = pos
-	#print("CHECK IF INFRAME: ",pos)
 	checks = [y==0, y==cols_lim] if frame_direction == "vertical" else [x==0, x==rows_lim]
 	return any(checks)

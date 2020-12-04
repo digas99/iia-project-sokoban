@@ -25,7 +25,6 @@ class PathFindingNode:
     def is_deadlock(self, adjacents, unwanted_symbols, gamestate):
         return DeadlockAgent(self.position, adjacents, unwanted_symbols, gamestate).check_all_deadlocks() if self.symbol not in ["#", ".", "*", "+"] and adjacents != None else False
 
-
     def children(self, all_children=False):
         x,y = self.position
         if not all_children:
@@ -113,7 +112,7 @@ class GameStateNode:
                 for c in range(len(self.gridstate[0])):
                     if self.gridstate[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
                         aux.append(self.gridstate[l][c])   
-            ###### ATUALIZAÇÃO DO GRIDSTATE #######                                                                                 
+            ###### ATUALIZAÇÃO DO GRIDSTATE #######                                                                           
             childrenlist = [n for n in aux if n.symbol not in ['#', '$', '*'] and self.opposite(box, n).symbol not in ['#','$',"*"] and self.legal_move(box, n) and not n.is_deadlock(n.children(True), ['#'], self)]
             for child in childrenlist:
                 new_gamestate = GameStateNode(self.gridstate, (box.position, child.position))
@@ -201,21 +200,21 @@ class Tree_search:
                 path.append(self.start)
 
                 ######### DEBUG #########################
-                if isinstance(curr_node, GameStateNode):
-                    print("Solution!!!")
-                    for p in path[::-1]:
-                        print("")
-                        print(p)
+                # if isinstance(curr_node, GameStateNode):
+                #     print("Solution!!!")
+                #     for p in path[::-1]:
+                #         print("")
+                #         print(p)
 
-                    print("Openset -------------")
-                    for node in openset:
-                        print("")
-                        print(node)
+                #     print("Openset -------------")
+                #     for node in openset:
+                #         print("")
+                #         print(node)
 
-                    print("Closedset ++++++++++++")
-                    for node in closedset:
-                        print("")
-                        print(node)
+                #     print("Closedset ++++++++++++")
+                #     for node in closedset:
+                #         print("")
+                #         print(node)
 
 
                 return path[::-1]

@@ -78,6 +78,12 @@ class GameStateNode:
         y =  y_box + (y_box - y_node)
         return self.gridstate[x][y]
 
+    # MORE COMPACT VERSION
+    # def opposite(self, box, node):
+    #     x_box, y_box = box.position
+    #     x_node, y_node = node.position
+    #     return self.gridstate[x_box + (x_box - x_node)][y_box + (y_box - y_node)]
+
     def get_keeper(self):
         lines = len(self.gridstate)
         cols = len(self.gridstate[0])
@@ -99,6 +105,10 @@ class GameStateNode:
         else:
             return True
 
+    # MORE COMPACT VERSION
+    # def legal_move(self, box, node):
+    #     return False if Tree_search(self.keeper, self.opposite(box, node), "greedy").search() == None else True
+
     def children(self):
 
         PathFindingNode.grid = self.gridstate
@@ -119,6 +129,16 @@ class GameStateNode:
                 result.append(new_gamestate)
         
         return result
+
+    # MORE COMPACT VERSION
+    # def children(self):
+    #     PathFindingNode.grid = self.gridstate
+    #     result = []
+    #     for box in self.boxes:      
+    #         x,y = box.position                                                               
+    #         for child in [n for n in [self.gridstate[l][c] for c in range(len(self.gridstate[0])) for l in range(len(self.gridstate)) if self.gridstate[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]] if n.symbol not in ['#', '$', '*'] and self.opposite(box, n).symbol not in ['#','$',"*"] and self.legal_move(box, n) and not n.is_deadlock(n.children(True), ['#'], self)]:
+    #             result.append(GameStateNode(self.gridstate, (box.position, child.position)))  
+    #     return result
 
     def move(self, posbox, poschild, keeper):
         #keeper

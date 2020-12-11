@@ -28,7 +28,7 @@ class Agent:
         root = GameStateNode(self.starting_grid)
         goal = GameStateNode(self.final_grid)
         goal.final = True
-        tree_boxes = Tree_search(root, goal, "greedy")       
+        tree_boxes = TreeSearch(root, goal, "greedy")       
         tree_state = tree_boxes.search() 
         path = self.keeper_path(tree_state)
         return path
@@ -46,7 +46,7 @@ class Agent:
             nextbox = state.gridstate[x_next][y_next]
             finish = state.opposite(box, nextbox)
             PathFindingNode.grid = childstate.gridstate
-            tree_keeper = Tree_search(keeper, finish, "greedy")
+            tree_keeper = TreeSearch(keeper, finish, "greedy")
             aux = tree_keeper.search() 
             path += [node.position for node in aux] + [box.position] if aux != None else [keeper.position] + [box.position]
         return path

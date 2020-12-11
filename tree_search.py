@@ -86,7 +86,7 @@ class GameStateNode:
         return [self.gridstate[l][c] for c in range(len(self.gridstate[0])) for l in range(len(self.gridstate)) if self.gridstate[l][c].symbol in ['$', '*']]
 
     def legal_move(self, box, node):
-        return False if Tree_search(self.keeper, self.opposite(box, node), "greedy").search() == None else True
+        return False if TreeSearch(self.keeper, self.opposite(box, node), "greedy").search() == None else True
 
     def children(self):
         PathFindingNode.grid = self.gridstate
@@ -135,7 +135,7 @@ class GameStateNode:
             boxes = boxes[1::] + [boxes[0]]
         return min([sum(box) for (index, box) in h.items()])
 
-class Tree_search:
+class TreeSearch:
     def __init__(self, start, goal, strategy):
         self.start = start 
         self.goal = goal

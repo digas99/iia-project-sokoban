@@ -152,14 +152,15 @@ class TreeSearch:
 
         openset.add(curr_node)
 
+        #finds the node with the lowest f function
+        if self.strategy == "uniform":
+            k = lambda n: n.g
+        elif self.strategy == "greedy":
+            k = lambda n: n.h
+        elif self.strategy == "a*":
+            k = lambda n: n.g+n.h
+
         while openset:
-            #finds the node with the lowest f function
-            if self.strategy == "uniform":
-                k = lambda n: n.g
-            elif self.strategy == "greedy":
-                k = lambda n: n.h
-            elif self.strategy == "a*":
-                k = lambda n: n.g+n.h
             curr_node = min(openset, key=k)
 
             #if node is goal box
@@ -176,9 +177,7 @@ class TreeSearch:
             openset.remove(curr_node)
             closedset.add(curr_node)
 
-            children_list = curr_node.children()
-            
-            for n in children_list:
+            for n in curr_node.children():
                 #if its already seen, skip it
                 if n in closedset:
                     continue

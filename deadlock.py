@@ -1,20 +1,10 @@
 class DeadlockAgent:
 	def __init__(self, position, adjacents, unwanted_symbols, gamestate):
 		self.position = position
-		self.adjacents = adjacents
-		self.unwanted_symbols = unwanted_symbols
 		self.obstacles = [adjacent for adjacent in adjacents if adjacent.symbol in unwanted_symbols]
 		self.gamestate = gamestate
-		
-	def set_unwanted_symbols(self, unwanted_symbols):
-		self.unwanted_symbols = unwanted_symbols
-		self.obstacles = [adjacent for adjacent in self.adjacents if adjacent.symbol in unwanted_symbols]
-
-	def get_unwanted_symbols(self):
-		return self.unwanted_symbols
 
 	def check_all_deadlocks(self):
-		#return any([function(self) for name, function in DeadlockAgent.__dict__.items() if callable(function) and name not in ["__init__", "check_all_deadlocks", "set_unwanted_symbols", "get_unwanted_symbols"]])
 		if self.deadlock_corner():
 			return True
 		
@@ -25,8 +15,7 @@ class DeadlockAgent:
 
 	def deadlock_corner(self):
 		x, y = self.position
-		pairs = [[(x-1, y), (x, y+1)], [(x, y+1), (x+1, y)], [(x+1, y), (x, y-1)], [(x, y-1), (x-1, y)]]
-		return any([all(square in [obstacle.position for obstacle in self.obstacles] for square in pair) for pair in pairs])
+		return any([all(square in [obstacle.position for obstacle in self.obstacles] for square in pair) for pair in [[(x-1, y), (x, y+1)], [(x, y+1), (x+1, y)], [(x+1, y), (x, y-1)], [(x, y-1), (x-1, y)]]])
 	
 	def deadlock_next_to_walls_no_goal_in_path(self):
 		x, y = self.position
@@ -97,8 +86,3 @@ def side_is_wall(origin, parent, current, mapa, adjacents, direction):
 	# get node
 	side_node = mapa[side[0]][side[1]]
 	return side_is_wall(origin, current, side_node, mapa, side_node.children(True), direction)
-	
-def in_frame(rows_lim, cols_lim, pos, frame_direction):
-	x, y = pos
-	checks = [y==0, y==cols_lim] if frame_direction == "vertical" else [x==0, x==rows_lim]
-	return any(checks)

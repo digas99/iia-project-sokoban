@@ -4,8 +4,6 @@ from copy import deepcopy
 class Agent:
 
     def __init__(self, mapa):
-        # boxes = state['boxes']
-        # print(boxes)
         self.mapa = mapa
         self.starting_grid = grid(self.mapa)
         self.final_grid = self.final_state()
@@ -27,12 +25,9 @@ class Agent:
         return keys
 
     def decision(self):
-        ############ TESTING ######################
         root = GameStateNode(self.starting_grid)
         goal = GameStateNode(self.final_grid)
         goal.final = True
-        #print(root)
-        #print(goal)
         tree_boxes = Tree_search(root, goal, "greedy")       
         tree_state = tree_boxes.search() 
         path = self.keeper_path(tree_state)

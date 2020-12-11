@@ -3,7 +3,6 @@ from copy import deepcopy
 from deadlock import DeadlockAgent
 
 class PathFindingNode:                      
-
     grid = []
 
     def __init__(self, symbol, position):
@@ -27,11 +26,7 @@ class PathFindingNode:
 
     def children(self, all_children=False):
         x,y = self.position
-        if not all_children:
-            return [n for n in [self.grid[l][c] for c in range(len(self.grid[0])) for l in range(len(self.grid)) if self.grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]] if n.symbol in ['-', '@', '.', '+']]
-        else:
-            return [n for n in [self.grid[l][c] for c in range(len(self.grid[0])) for l in range(len(self.grid)) if self.grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]]]
-
+        return [n for n in [self.grid[l][c] for c in range(len(self.grid[0])) for l in range(len(self.grid)) if self.grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]] if n.symbol in ['-', '@', '.', '+']] if not all_children else [n for n in [self.grid[l][c] for c in range(len(self.grid[0])) for l in range(len(self.grid)) if self.grid[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]]]
 
     #distance between each node and goal node (manhattan distance)
     def heuristics(self, node):
@@ -74,15 +69,7 @@ class GameStateNode:
     def opposite(self, box, node):
         x_box, y_box = box.position
         x_node, y_node = node.position
-        x = x_box + (x_box - x_node)
-        y =  y_box + (y_box - y_node)
-        return self.gridstate[x][y]
-
-    # MORE COMPACT VERSION
-    # def opposite(self, box, node):
-    #     x_box, y_box = box.position
-    #     x_node, y_node = node.position
-    #     return self.gridstate[x_box + (x_box - x_node)][y_box + (y_box - y_node)]
+        return self.gridstate[x_box + (x_box - x_node)][y_box + (y_box - y_node)]
 
     def get_keeper(self):
         lines = len(self.gridstate)
@@ -99,46 +86,11 @@ class GameStateNode:
         return [self.gridstate[l][c] for c in range(len(self.gridstate[0])) for l in range(len(self.gridstate)) if self.gridstate[l][c].symbol in ['$', '*']]
 
     def legal_move(self, box, node):
-        a = Tree_search(self.keeper, self.opposite(box, node), "greedy")
-        if a.search() == None:
-            return False
-        else:
-            return True
-
-    # MORE COMPACT VERSION
-    # def legal_move(self, box, node):
-    #     return False if Tree_search(self.keeper, self.opposite(box, node), "greedy").search() == None else True
+        return False if Tree_search(self.keeper, self.opposite(box, node), "greedy").search() == None else True
 
     def children(self):
-
         PathFindingNode.grid = self.gridstate
-
-        result = []
-        
-        for box in self.boxes:
-            aux = []
-            x,y = box.position
-            for l in range(len(self.gridstate)):
-                for c in range(len(self.gridstate[0])):
-                    if self.gridstate[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]:
-                        aux.append(self.gridstate[l][c])   
-            ###### ATUALIZAÇÃO DO GRIDSTATE #######                                                                           
-            childrenlist = [n for n in aux if n.symbol not in ['#', '$', '*'] and self.opposite(box, n).symbol not in ['#','$',"*"] and self.legal_move(box, n) and not n.is_deadlock(n.children(True), ['#'], self)]
-            for child in childrenlist:
-                new_gamestate = GameStateNode(self.gridstate, (box.position, child.position))
-                result.append(new_gamestate)
-        
-        return result
-
-    # MORE COMPACT VERSION
-    # def children(self):
-    #     PathFindingNode.grid = self.gridstate
-    #     result = []
-    #     for box in self.boxes:      
-    #         x,y = box.position                                                               
-    #         for child in [n for n in [self.gridstate[l][c] for c in range(len(self.gridstate[0])) for l in range(len(self.gridstate)) if self.gridstate[l][c].position in [(x-1, y),(x,y - 1),(x,y + 1),(x+1,y)]] if n.symbol not in ['#', '$', '*'] and self.opposite(box, n).symbol not in ['#','$',"*"] and self.legal_move(box, n) and not n.is_deadlock(n.children(True), ['#'], self)]:
-    #             result.append(GameStateNode(self.gridstate, (box.position, child.position)))  
-    #     return result
+        return [GameStateNode(self.gridstate, (box.position, child.position)) for box in self.boxes for child in [n for n in [self.gridstate[l][c] for c in range(len(self.gridstate[0])) for l in range(len(self.gridstate)) if self.gridstate[l][c].position in [(box.position[0]-1, box.position[1]),(box.position[0],box.position[1] - 1),(box.position[0],box.position[1] + 1),(box.position[0]+1,box.position[1])]] if n.symbol not in ['#', '$', '*'] and self.opposite(box, n).symbol not in ['#','$',"*"] and self.legal_move(box, n) and not n.is_deadlock(n.children(True), ['#'], self)]]
 
     def move(self, posbox, poschild, keeper):
         #keeper
@@ -189,7 +141,6 @@ class Tree_search:
         self.goal = goal
         self.strategy = strategy
 
-    # A* algorithm
     def search(self):
         #not seen nodes
         openset = set()
@@ -218,25 +169,6 @@ class Tree_search:
                     path.append(curr_node)
                     curr_node = curr_node.previous
                 path.append(self.start)
-
-                ######### DEBUG #########################
-                # if isinstance(curr_node, GameStateNode):
-                #     print("Solution!!!")
-                #     for p in path[::-1]:
-                #         print("")
-                #         print(p)
-
-                #     print("Openset -------------")
-                #     for node in openset:
-                #         print("")
-                #         print(node)
-
-                #     print("Closedset ++++++++++++")
-                #     for node in closedset:
-                #         print("")
-                #         print(node)
-
-
                 return path[::-1]
         
             #if node is not goal box

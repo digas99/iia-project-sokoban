@@ -12,7 +12,6 @@ async def solver(puzzle, solution):
     while True:
         game_properties = await puzzle.get()
         mapa = Map(game_properties["map"])
-        print(mapa)
         agent = Agent(mapa)
 
         while True:
